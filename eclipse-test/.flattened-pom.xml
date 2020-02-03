@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.devonfw.tools.ide</groupId>
+  <artifactId>devonfw-eclipse-test</artifactId>
+  <version>dev-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <description>Eclipse test.</description>
+  <url>https://github.com/devonfw/ide/wiki/devonfw-eclipse-test</url>
+  <inceptionYear>2013</inceptionYear>
+  <licenses>
+    <license>
+      <name>Apache Software License, Version 2.0</name>
+      <url>https://raw.githubusercontent.com/devonfw/ide/master/LICENSE</url>
+      <distribution>repo</distribution>
+      <comments></comments>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>hohwille</id>
+      <name>Jörg Hohwiller</name>
+      <email>hohwille@users.sourceforge.net</email>
+      <organization>Capgemini</organization>
+      <organizationUrl></organizationUrl>
+      <roles>
+        <role>admin</role>
+        <role>designer</role>
+        <role>developer</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>trippl</id>
+      <name>Thomas Rippl</name>
+      <email></email>
+      <organization></organization>
+      <organizationUrl></organizationUrl>
+      <roles>
+        <role>developer</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>markusschuh</id>
+      <name>Markus Schuh</name>
+      <email></email>
+      <organization>Capgemini</organization>
+      <organizationUrl></organizationUrl>
+      <roles>
+        <role>contributor</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>maybeec</id>
+      <name>Malte Brunnlieb</name>
+      <email></email>
+      <organization>Capgemini</organization>
+      <organizationUrl></organizationUrl>
+      <roles>
+        <role>contributor</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>ediekman</id>
+      <name>Erik Diekmann</name>
+      <email></email>
+      <organization>Capgemini</organization>
+      <organizationUrl></organizationUrl>
+      <roles>
+        <role>contributor</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>nricheton</id>
+      <name>Nicolas Richeton</name>
+      <email></email>
+      <organization>Capgemini</organization>
+      <organizationUrl></organizationUrl>
+      <roles>
+        <role>contributor</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+  </developers>
+  <scm>
+    <url>https://github.com/oasp/oasp4j-ide/tree/master/devonfw-eclipse-test</url>
+  </scm>
+  <distributionManagement>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-maven-plugin</artifactId>
+        <version>1.5.1</version>
+        <extensions>true</extensions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
