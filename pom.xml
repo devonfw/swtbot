@@ -18,9 +18,8 @@
 	</properties>
 
 	<modules>
-		<module>../devon-ide-setup</module>
+		<module>devon-ide-setup</module>
 		<module>swtbot-eclipse-test</module>
-
 	</modules>
 	<dependencies>
 
