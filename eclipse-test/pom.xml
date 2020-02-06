@@ -51,7 +51,7 @@
 				<version>${tycho.version}</version>
 				<configuration>
 					<useProjectSettings>true</useProjectSettings>
-					<compilerArguments>						
+					<compilerArguments>
 						<encoding>${project.build.sourceEncoding}</encoding>
 					</compilerArguments>
 				</configuration>
@@ -107,10 +107,10 @@
 		</pluginRepository>
 	</pluginRepositories>
 	<repositories>
-    <repository>
-      <id>2019-09</id>
-      <layout>p2</layout>
-      <url>https://download.eclipse.org/releases/2019-09</url>
-    </repository>
-  </repositories>
+		<repository>
+			<id>2019-09</id>
+			<layout>p2</layout>
+			<url>https://download.eclipse.org/releases/2019-09</url>
+		</repository>
+	</repositories>
 </project>

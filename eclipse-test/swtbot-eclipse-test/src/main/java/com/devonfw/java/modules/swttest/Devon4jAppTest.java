@@ -26,11 +26,10 @@ public class Devon4jAppTest {
   @BeforeClass
   public static void initBot() {
 
-    // bot.sleep(1000000);
     bot = new SWTWorkbenchBot();
-    // Project should be inside the Directory(directory name)/temp/projects
-    File currDir = new File("\\temp\\projects");
-    path = currDir.getAbsolutePath();
+    // Project should be inside the Directory
+    File projectPath = new File("\\SWTBOT-repo\\devon4jproject");
+    path = projectPath.getAbsolutePath();
   }
 
   /**
@@ -41,7 +40,6 @@ public class Devon4jAppTest {
   public void importJavaProject() {
 
     bot.menu("File").menu("Import...").click();
-
     bot.tree().expandNode("Maven").select("Existing Maven Projects");
     bot.button("Next >").click();
     bot.comboBoxWithLabel("Root Directory:").setText(path);
@@ -60,12 +58,11 @@ public class Devon4jAppTest {
     bot.tree().getTreeItem("devon4japp-core").expand();
 
     bot.tree().getTreeItem("devon4japp-core").getNode("src/test/java").expand();
-    bot.tree().getTreeItem("devon4japp-core").getNode("src/test/java")
-        .getNode("com.devon4japp.devon4japp.general.service.impl.rest").expand();
+    bot.tree().getTreeItem("devon4japp-core").getNode("src/test/java").getNode("com.test.general.service.impl.rest")
+        .expand();
     bot.waitUntil(new AllJobsAreFinished(), 10000);
-    bot.tree().getTreeItem("devon4japp-core").getNode("src/test/java")
-        .getNode("com.devon4japp.devon4japp.general.service.impl.rest").getNode("SecurityRestServiceImplTest.java")
-        .select().contextMenu("Run As").menu("1 JUnit Test").click();
+    bot.tree().getTreeItem("devon4japp-core").getNode("src/test/java").getNode("com.test.general.service.impl.rest")
+        .getNode("SecurityRestServiceImplTest.java").select().contextMenu("Run As").menu("1 JUnit Test").click();
     bot.waitUntil(new AllJobsAreFinished(), 10000);
   }
 

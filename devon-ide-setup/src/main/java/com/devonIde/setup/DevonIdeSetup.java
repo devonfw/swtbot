@@ -21,13 +21,11 @@ import com.devonIde.helper.FileCreator;
  */
 public class DevonIdeSetup {
 
-  public static void downloadSetup() throws IOException {
+  private static void downloadSetup() throws IOException {
 
     File currDir = new File("\\SWTBOT-repo\\download");
     currDir.mkdir();
     String absPath = currDir.getAbsolutePath();
-    System.out.println("Setup downloaded location - " + absPath);
-
     URL url = new URL("http://de-mucevolve02/files/devonfw-ide/releases/devonfw-ide-scripts-3.2.2.tar.gz");
     URLConnection urlConnection = url.openConnection();
     BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
@@ -39,7 +37,6 @@ public class DevonIdeSetup {
     }
     out.close();
     in.close();
-
   }
 
   /**
@@ -51,12 +48,10 @@ public class DevonIdeSetup {
     File destDir = new File("\\SWTBOT-repo\\projects\\my-project");
     destDir.mkdirs();
     TarGZipUnArchiver unArchiver = new TarGZipUnArchiver();
-
     // Need to set/enable logging for the unArchiver to avoid null pointer
     ConsoleLoggerManager manager = new ConsoleLoggerManager();
     manager.initialize();
     unArchiver.enableLogging(manager.getLoggerForComponent("Extract Setup"));
-
     unArchiver.setSourceFile(sourceFile);
     unArchiver.setDestDirectory(destDir);
     unArchiver.extract();
@@ -68,26 +63,28 @@ public class DevonIdeSetup {
     ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/C", "Start", "setup-helper.bat");
     File dir = new File(new File("\\SWTBOT-repo\\projects\\my-project").getAbsolutePath());
     pb.directory(dir);
-    Process process = pb.start();
-    System.out.println("Setup of devonfw-ide installing ...");
+    pb.start();
 
   }
 
   public static void main(String[] args) throws IOException, InterruptedException {
 
+    File baseFolder = new File("\\SWTBOT-repo");
+    baseFolder.mkdir();
     downloadSetup();
     extractDownloadedSetup();
     FileCreator.createBatFile();
     FileCreator.createBashFile();
     FileCreator.createTextFfile();
-    System.out.println("Batch file created");
-
+    FileCreator.createDevon4jAppWithCommandLine();
     runSetup();
+
     File file = new File("\\SWTBOT-repo\\projects\\my-project\\text.txt");
     FileReader fr = new FileReader(file); // Creation of File Reader object
     BufferedReader br;
     String lineReader = "";
     String searchLine = "";
+    System.out.println("Setup of devonfw-ide installing ...");
     while (true) {
       TimeUnit.MINUTES.sleep(1);
       br = new BufferedReader(fr);// Creation of BufferedReader object
