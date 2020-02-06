@@ -47,8 +47,8 @@ public class DevonIdeSetup {
    */
   private static void extractDownloadedSetup() {
 
-    File sourceFile = new File("\\SWTBOT-repo\\download\\devonfw-ide-scripts-3.2.2.tar.gz").getAbsoluteFile();
-    File destDir = new File("\\SWTBOT-repo\\projects\\my-project").getAbsoluteFile();
+    File sourceFile = new File("//SWTBOT-repo//download//devonfw-ide-scripts-3.2.2.tar.gz").getAbsoluteFile();
+    File destDir = new File("//SWTBOT-repo//projects//my-project").getAbsoluteFile();
     destDir.mkdirs();
     TarGZipUnArchiver unArchiver = new TarGZipUnArchiver();
     // Need to set/enable logging for the unArchiver to avoid null pointer
