@@ -23,7 +23,7 @@ public class DevonIdeSetup {
 
   private static void downloadSetup() throws IOException {
 
-    File currDir = new File("//SWTBOT-repo//download");
+    File currDir = new File("\\SWTBOT-repo\\download");
     currDir.mkdir();
     String absPath = currDir.getAbsolutePath();
     URL url = new URL("http://de-mucevolve02/files/devonfw-ide/releases/devonfw-ide-scripts-3.2.2.tar.gz");
@@ -32,7 +32,7 @@ public class DevonIdeSetup {
     File destFile = new File(absPath + "/devonfw-ide-scripts-3.2.2.tar.gz");
     destFile.createNewFile();
     System.out.println("File has been created  " + absPath + "/devonfw-ide-scripts-3.2.2.tar.gz");
-    FileOutputStream out = new FileOutputStream(absPath + "/devonfw-ide-scripts-3.2.2.tar.gz");
+    FileOutputStream out = new FileOutputStream(absPath + "\\devonfw-ide-scripts-3.2.2.tar.gz");
     int i = 0;
     byte[] bytesIn = new byte[3000000];
     while ((i = in.read(bytesIn)) >= 0) {
