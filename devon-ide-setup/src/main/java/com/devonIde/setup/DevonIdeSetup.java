@@ -21,33 +21,24 @@ import com.devonIde.helper.FileCreator;
  */
 public class DevonIdeSetup {
 
-  public static final String FILE_SEPARATOR = File.separator;
+  private final static String FILE_SEPARATOR = File.separator;
 
   private static void downloadSetup() throws IOException {
 
-    File currDir = new File(FILE_SEPARATOR + "SWTBOT-repo" + FILE_SEPARATOR + "download");
+    File currDir = new File("\\SWTBOT-repo\\download");
     currDir.mkdir();
     String absPath = currDir.getAbsolutePath();
-    System.out.println("File created currDir.........." + currDir);
     URL url = new URL("http://de-mucevolve02/files/devonfw-ide/releases/devonfw-ide-scripts-3.2.2.tar.gz");
     URLConnection urlConnection = url.openConnection();
-    System.out.println("Connection open.........");
     BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
-    File destFile = new File(absPath + FILE_SEPARATOR + "devonfw-ide-scripts-3.2.2.tar.gz").getAbsoluteFile();
-    System.out.println("File create for devon ide" + destFile.getAbsolutePath());
-    destFile.mkdirs();
-
-    destFile.createNewFile();
-    System.out.println("File created");
-
-    FileOutputStream out = new FileOutputStream(destFile);
-    System.out.println("Start downloading");
+    FileOutputStream out = new FileOutputStream(absPath + "\\devonfw-ide-scripts-3.2.2.tar.gz");
     int i = 0;
     byte[] bytesIn = new byte[3000000];
     while ((i = in.read(bytesIn)) >= 0) {
       out.write(bytesIn, 0, i);
     }
-    System.out.println("Setup Downloaded");
+    System.out
+        .println("Devonfw ide script is created at............." + absPath + "\\devonfw-ide-scripts-3.2.2.tar.gz");
     out.close();
     in.close();
   }
@@ -57,10 +48,11 @@ public class DevonIdeSetup {
    */
   private static void extractDownloadedSetup() {
 
-    File sourceFile = new File(FILE_SEPARATOR + "SWTBOT-repo" + FILE_SEPARATOR + "download" + FILE_SEPARATOR
+    System.out.println("Extraction Started......");
+    File sourceFile = new File("" + FILE_SEPARATOR + "SWTBOT-repo" + FILE_SEPARATOR + "download" + FILE_SEPARATOR
         + "devonfw-ide-scripts-3.2.2.tar.gz");
     File destDir = new File(
-        FILE_SEPARATOR + "SWTBOT-repo" + FILE_SEPARATOR + "projects" + FILE_SEPARATOR + "my-project");
+        "" + FILE_SEPARATOR + "SWTBOT-repo" + FILE_SEPARATOR + "projects" + FILE_SEPARATOR + "my-project");
     destDir.mkdirs();
     TarGZipUnArchiver unArchiver = new TarGZipUnArchiver();
     // Need to set/enable logging for the unArchiver to avoid null pointer
@@ -69,17 +61,16 @@ public class DevonIdeSetup {
     unArchiver.enableLogging(manager.getLoggerForComponent("Extract Setup"));
     unArchiver.setSourceFile(sourceFile);
     unArchiver.setDestDirectory(destDir);
+    System.out.println("Extraction progress........");
     unArchiver.extract();
-    System.out.println("File Extracted");
+    System.out.println("Extraction done........");
 
   }
 
   private static void runSetup() throws IOException, InterruptedException {
 
     ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/C", "Start", "setup-helper.bat");
-    File dir = new File(
-        new File(FILE_SEPARATOR + "SWTBOT-repo" + FILE_SEPARATOR + "projects" + FILE_SEPARATOR + "my-project")
-            .getAbsolutePath());
+    File dir = new File(new File("\\SWTBOT-repo\\projects\\my-project").getAbsolutePath());
     pb.directory(dir);
     pb.start();
 
@@ -87,7 +78,7 @@ public class DevonIdeSetup {
 
   public static void main(String[] args) throws IOException, InterruptedException {
 
-    File baseFolder = new File(FILE_SEPARATOR + "SWTBOT-repo");
+    File baseFolder = new File("\\SWTBOT-repo");
     baseFolder.mkdir();
     downloadSetup();
     extractDownloadedSetup();
@@ -97,8 +88,7 @@ public class DevonIdeSetup {
     FileCreator.createDevon4jAppWithCommandLine();
     runSetup();
 
-    File file = new File(FILE_SEPARATOR + "SWTBOT-repo" + FILE_SEPARATOR + "projects" + FILE_SEPARATOR + "my-project"
-        + FILE_SEPARATOR + "text.txt");
+    File file = new File("\\SWTBOT-repo\\projects\\my-project\\text.txt");
     FileReader fr = new FileReader(file); // Creation of File Reader object
     BufferedReader br;
     String lineReader = "";
