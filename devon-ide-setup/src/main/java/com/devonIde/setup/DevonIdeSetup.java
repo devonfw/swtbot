@@ -29,13 +29,12 @@ public class DevonIdeSetup {
     currDir.mkdir();
     String absPath = currDir.getAbsolutePath();
     System.out.println("File created currDir.........." + currDir);
-    URL url = new URL(
-        "http:" + FILE_SEPARATOR + FILE_SEPARATOR + "de-mucevolve02" + FILE_SEPARATOR + "files" + FILE_SEPARATOR
-            + "devonfw-ide" + FILE_SEPARATOR + "releases" + FILE_SEPARATOR + "devonfw-ide-scripts-3.2.2.tar.gz");
+    URL url = new URL("http://de-mucevolve02/files/devonfw-ide/releases/devonfw-ide-scripts-3.2.2.tar.gz");
     URLConnection urlConnection = url.openConnection();
-    System.out.println("Connection open ...........");
+    System.out.println("Connection open.........");
     BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
     File destFile = new File(absPath + FILE_SEPARATOR + "devonfw-ide-scripts-3.2.2.tar.gz");
+    System.out.println("File create for devon ide" + destFile.getAbsolutePath());
     destFile.createNewFile();
     System.out.println("File created");
 
