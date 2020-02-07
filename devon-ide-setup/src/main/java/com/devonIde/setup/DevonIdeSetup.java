@@ -21,7 +21,7 @@ import com.devonIde.helper.FileCreator;
  */
 public class DevonIdeSetup {
 
-  public static final String FILE_SEPARATOR = File.separator + "" + File.separator;
+  public static final String FILE_SEPARATOR = File.separator;
 
   private static void downloadSetup() throws IOException {
 
