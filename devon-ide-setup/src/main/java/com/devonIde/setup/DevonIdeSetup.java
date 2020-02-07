@@ -59,8 +59,8 @@ public class DevonIdeSetup {
     ConsoleLoggerManager manager = new ConsoleLoggerManager();
     manager.initialize();
     unArchiver.enableLogging(manager.getLoggerForComponent("Extract Setup"));
-    unArchiver.setSourceFile(sourceFile);
-    unArchiver.setDestDirectory(destDir);
+    unArchiver.setSourceFile(sourceFile.getAbsoluteFile());
+    unArchiver.setDestDirectory(destDir.getAbsoluteFile());
     System.out.println("Extraction progress........");
     unArchiver.extract();
     System.out.println("Extraction done........");
