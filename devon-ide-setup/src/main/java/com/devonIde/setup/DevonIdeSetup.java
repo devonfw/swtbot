@@ -29,9 +29,6 @@ public class DevonIdeSetup {
     URL url = new URL("http://de-mucevolve02/files/devonfw-ide/releases/devonfw-ide-scripts-3.2.2.tar.gz");
     URLConnection urlConnection = url.openConnection();
     BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
-    File destFile = new File(absPath + "/devonfw-ide-scripts-3.2.2.tar.gz");
-    destFile.createNewFile();
-    System.out.println("File has been created  " + absPath + "\\devonfw-ide-scripts-3.2.2.tar.gz");
     FileOutputStream out = new FileOutputStream(absPath + "\\devonfw-ide-scripts-3.2.2.tar.gz");
     int i = 0;
     byte[] bytesIn = new byte[3000000];
@@ -47,8 +44,8 @@ public class DevonIdeSetup {
    */
   private static void extractDownloadedSetup() {
 
-    File sourceFile = new File("//SWTBOT-repo//download//devonfw-ide-scripts-3.2.2.tar.gz").getAbsoluteFile();
-    File destDir = new File("//SWTBOT-repo//projects//my-project").getAbsoluteFile();
+    File sourceFile = new File("\\SWTBOT-repo\\download\\devonfw-ide-scripts-3.2.2.tar.gz");
+    File destDir = new File("\\SWTBOT-repo\\projects\\my-project");
     destDir.mkdirs();
     TarGZipUnArchiver unArchiver = new TarGZipUnArchiver();
     // Need to set/enable logging for the unArchiver to avoid null pointer
