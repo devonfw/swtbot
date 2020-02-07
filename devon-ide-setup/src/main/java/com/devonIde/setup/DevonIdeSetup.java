@@ -37,8 +37,7 @@ public class DevonIdeSetup {
     while ((i = in.read(bytesIn)) >= 0) {
       out.write(bytesIn, 0, i);
     }
-    System.out
-        .println("Devonfw ide script is created at............." + absPath + "\\devonfw-ide-scripts-3.2.2.tar.gz");
+
     out.close();
     in.close();
   }
@@ -49,8 +48,7 @@ public class DevonIdeSetup {
   private static void extractDownloadedSetup() {
 
     System.out.println("Extraction Started......");
-    File sourceFile = new File("" + FILE_SEPARATOR + "SWTBOT-repo" + FILE_SEPARATOR + "download" + FILE_SEPARATOR
-        + "devonfw-ide-scripts-3.2.2.tar.gz");
+    File sourceFile = new File("\\SWTBOT-repo\\download\\devonfw-ide-scripts-3.2.2.tar.gz");
     File destDir = new File(
         "" + FILE_SEPARATOR + "SWTBOT-repo" + FILE_SEPARATOR + "projects" + FILE_SEPARATOR + "my-project");
     destDir.mkdirs();
@@ -59,8 +57,8 @@ public class DevonIdeSetup {
     ConsoleLoggerManager manager = new ConsoleLoggerManager();
     manager.initialize();
     unArchiver.enableLogging(manager.getLoggerForComponent("Extract Setup"));
-    unArchiver.setSourceFile(sourceFile.getAbsoluteFile());
-    unArchiver.setDestDirectory(destDir.getAbsoluteFile());
+    unArchiver.setSourceFile(sourceFile);
+    unArchiver.setDestDirectory(destDir);
     System.out.println("Extraction progress........");
     unArchiver.extract();
     System.out.println("Extraction done........");
