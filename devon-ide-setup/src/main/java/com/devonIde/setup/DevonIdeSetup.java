@@ -21,8 +21,7 @@ import com.devonIde.helper.FileCreator;
  */
 public class DevonIdeSetup {
 
-  /** Line separator, e.g. for windows '\r\n' */
-  public static final String FILE_SEPARATOR = File.separator;
+  public static final String FILE_SEPARATOR = File.separator + "" + File.separator;
 
   private static void downloadSetup() throws IOException {
 
@@ -34,12 +33,15 @@ public class DevonIdeSetup {
     BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
     File destFile = new File(absPath + FILE_SEPARATOR + "devonfw-ide-scripts-3.2.2.tar.gz");
     destFile.createNewFile();
+    System.out.println("File created");
+
     FileOutputStream out = new FileOutputStream(absPath + FILE_SEPARATOR + "devonfw-ide-scripts-3.2.2.tar.gz");
     int i = 0;
     byte[] bytesIn = new byte[3000000];
     while ((i = in.read(bytesIn)) >= 0) {
       out.write(bytesIn, 0, i);
     }
+    System.out.println("Setup Downloaded");
     out.close();
     in.close();
   }
@@ -62,6 +64,7 @@ public class DevonIdeSetup {
     unArchiver.setSourceFile(sourceFile);
     unArchiver.setDestDirectory(destDir);
     unArchiver.extract();
+    System.out.println("File Extracted");
 
   }
 
