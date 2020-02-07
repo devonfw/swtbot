@@ -36,7 +36,9 @@ public class DevonIdeSetup {
     File destFile = new File(FILE_SEPARATOR + "SWTBOT-repo" + FILE_SEPARATOR + "download" + FILE_SEPARATOR
         + "devonfw-ide-scripts-3.2.2.tar.gz");
     System.out.println("File create for devon ide" + destFile.getAbsolutePath());
-    destFile.createNewFile();
+    destFile.mkdir();
+    System.out.println("Directory has created " + destFile.getAbsolutePath());
+    // destFile.createNewFile();
     System.out.println("File created");
 
     FileOutputStream out = new FileOutputStream(FILE_SEPARATOR + "SWTBOT-repo" + FILE_SEPARATOR + "download"
