@@ -21,15 +21,18 @@ import com.devonIde.helper.FileCreator;
  */
 public class DevonIdeSetup {
 
+  /** Line separator, e.g. for windows '\r\n' */
+  public static final String FILE_SEPARATOR = File.separator;
+
   private static void downloadSetup() throws IOException {
 
-    File currDir = new File("\\SWTBOT-repo\\download");
+    File currDir = new File(FILE_SEPARATOR + "SWTBOT-repo" + FILE_SEPARATOR + "download");
     currDir.mkdir();
     String absPath = currDir.getAbsolutePath();
     URL url = new URL("http://de-mucevolve02/files/devonfw-ide/releases/devonfw-ide-scripts-3.2.2.tar.gz");
     URLConnection urlConnection = url.openConnection();
     BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
-    FileOutputStream out = new FileOutputStream(absPath + "\\devonfw-ide-scripts-3.2.2.tar.gz");
+    FileOutputStream out = new FileOutputStream(absPath + FILE_SEPARATOR + "devonfw-ide-scripts-3.2.2.tar.gz");
     int i = 0;
     byte[] bytesIn = new byte[3000000];
     while ((i = in.read(bytesIn)) >= 0) {
@@ -44,8 +47,10 @@ public class DevonIdeSetup {
    */
   private static void extractDownloadedSetup() {
 
-    File sourceFile = new File("//SWTBOT-repo//download//devonfw-ide-scripts-3.2.2.tar.gz").getAbsoluteFile();
-    File destDir = new File("//SWTBOT-repo//projects//my-project").getAbsoluteFile();
+    File sourceFile = new File(FILE_SEPARATOR + "SWTBOT-repo" + FILE_SEPARATOR + "download" + FILE_SEPARATOR
+        + "devonfw-ide-scripts-3.2.2.tar.gz");
+    File destDir = new File(
+        FILE_SEPARATOR + "SWTBOT-repo" + FILE_SEPARATOR + "projects" + FILE_SEPARATOR + "my-project");
     destDir.mkdirs();
     TarGZipUnArchiver unArchiver = new TarGZipUnArchiver();
     // Need to set/enable logging for the unArchiver to avoid null pointer
@@ -61,7 +66,9 @@ public class DevonIdeSetup {
   private static void runSetup() throws IOException, InterruptedException {
 
     ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/C", "Start", "setup-helper.bat");
-    File dir = new File(new File("\\SWTBOT-repo\\projects\\my-project").getAbsolutePath());
+    File dir = new File(
+        new File(FILE_SEPARATOR + "SWTBOT-repo" + FILE_SEPARATOR + "projects" + FILE_SEPARATOR + "my-project")
+            .getAbsolutePath());
     pb.directory(dir);
     pb.start();
 
@@ -69,7 +76,7 @@ public class DevonIdeSetup {
 
   public static void main(String[] args) throws IOException, InterruptedException {
 
-    File baseFolder = new File("\\SWTBOT-repo");
+    File baseFolder = new File(FILE_SEPARATOR + "SWTBOT-repo");
     baseFolder.mkdir();
     downloadSetup();
     extractDownloadedSetup();
@@ -79,7 +86,8 @@ public class DevonIdeSetup {
     FileCreator.createDevon4jAppWithCommandLine();
     runSetup();
 
-    File file = new File("\\SWTBOT-repo\\projects\\my-project\\text.txt");
+    File file = new File(FILE_SEPARATOR + "SWTBOT-repo" + FILE_SEPARATOR + "projects" + FILE_SEPARATOR + "my-project"
+        + FILE_SEPARATOR + "text.txt");
     FileReader fr = new FileReader(file); // Creation of File Reader object
     BufferedReader br;
     String lineReader = "";
