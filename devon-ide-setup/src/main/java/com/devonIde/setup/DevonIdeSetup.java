@@ -33,7 +33,7 @@ public class DevonIdeSetup {
     URLConnection urlConnection = url.openConnection();
     System.out.println("Connection open.........");
     BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
-    File destFile = new File(absPath + FILE_SEPARATOR + "devonfw-ide-scripts-3.2.2.tar.gz");
+    File destFile = new File(absPath + FILE_SEPARATOR + "devonfw-ide-scripts-3.2.2.tar.gz").getAbsoluteFile();
     System.out.println("File create for devon ide" + destFile.getAbsolutePath());
     destFile.mkdirs();
 
