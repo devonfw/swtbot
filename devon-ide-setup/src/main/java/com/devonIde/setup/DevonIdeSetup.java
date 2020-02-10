@@ -26,6 +26,7 @@ public class DevonIdeSetup {
     File currDir = new File(File.separator + "SWTBOT-repo" + File.separator + "download");
     currDir.mkdir();
     String absPath = currDir.getAbsolutePath();
+    System.out.println("Path -----" + absPath);
     URL url = new URL("http://de-mucevolve02/files/devonfw-ide/releases/devonfw-ide-scripts-3.2.2.tar.gz");
     URLConnection urlConnection = url.openConnection();
     BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
@@ -35,7 +36,7 @@ public class DevonIdeSetup {
     while ((i = in.read(bytesIn)) >= 0) {
       out.write(bytesIn, 0, i);
     }
-
+    System.out.println("downloadSetup done");
     out.close();
     in.close();
   }
