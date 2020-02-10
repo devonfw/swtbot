@@ -30,8 +30,9 @@ public class DevonIdeSetup {
     URL url = new URL("http://de-mucevolve02/files/devonfw-ide/releases/devonfw-ide-scripts-3.2.2.tar.gz");
     URLConnection urlConnection = url.openConnection();
     BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
+    System.out.println("File out put stream  start");
     FileOutputStream out = new FileOutputStream(absPath + File.separator + "devonfw-ide-scripts-3.2.2.tar.gz");
-    System.out.println("File out put stream  " + out.toString());
+    System.out.println("File out put stream  end");
     int i = 0;
     byte[] bytesIn = new byte[3000000];
     while ((i = in.read(bytesIn)) >= 0) {
