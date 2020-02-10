@@ -12,7 +12,8 @@ public class FileCreator {
 
   public static boolean createBatFile() throws IOException {
 
-    File file = new File("\\SWTBOT-repo\\projects\\my-project\\setup-helper.bat");
+    File file = new File(File.separator + "SWTBOT-repo" + File.separator + "projects" + File.separator + "my-project"
+        + File.separator + "setup-helper.bat");
     file.createNewFile();
     FileWriter fileWriter = new FileWriter(file);
     fileWriter.write("@echo off\r\n" + "\r\n"
@@ -27,7 +28,8 @@ public class FileCreator {
 
   public static boolean createBashFile() throws IOException {
 
-    File file = new File("\\SWTBOT-repo\\projects\\my-project\\home-directory");
+    File file = new File("" + File.separator + "SWTBOT-repo" + File.separator + "projects" + File.separator
+        + "my-project" + File.separator + "home-directory");
     file.createNewFile();
     FileWriter fileWriter = new FileWriter(file);
     fileWriter.write("#!/bin/bash\r\n" + "DEVON_HOME_DIR=~\r\n" + "echo home directory \"${DEVON_HOME_DIR}\"\r\n"
@@ -41,7 +43,8 @@ public class FileCreator {
 
   public static boolean createTextFfile() throws IOException {
 
-    File file = new File("\\SWTBOT-repo\\projects\\my-project\\text.txt");
+    File file = new File(File.separator + "SWTBOT-repo" + File.separator + "projects" + File.separator + "my-project"
+        + File.separator + "text.txt");
     file.createNewFile();
     System.out.println("Text file created...........");
     return true;
@@ -50,7 +53,7 @@ public class FileCreator {
   public static boolean createDevon4jAppWithCommandLine() {
 
     System.out.println("createDevon4jAppWithCommandLine started...........");
-    File projectPath = new File("\\SWTBOT-repo\\devon4jproject");
+    File projectPath = new File(File.separator + "SWTBOT-repo" + File.separator + "devon4jproject");
     projectPath.mkdir();
     try {
       Runtime.getRuntime().exec("cmd /c"

@@ -1,0 +1,378 @@
+#!/usr/bin/env bash
+# shellcheck source=scripts/functions
+source "$(dirname "${0}")"/../functions
+DEVON_IDE_REPO_URL="https://repo.maven.apache.org/maven2/com/devonfw/tools/ide"
+
+function doUpdateScripts() {
+  # shellcheck disable=SC2007,SC2154
+  doUpgradeMavenArtifact "${DEVON_IDE_HOME}" "${DEVON_IDE_REPO_URL}" "devonfw-ide-scripts" "${target_version}" ".tar.gz" "3.2.2"
+  if [ "${?}" = 0 ]
+  then
+    if [ "${target_version}" = "LATEST" ]
+    then
+      cp "${DEVON_IDE_HOME}/scripts/devon" ~/.devon/devon
+    fi
+    if doIsWindows
+    then
+      if [ "${target_version}" = "LATEST" ]
+      then
+        cp "${DEVON_IDE_HOME}/scripts/devon.bat" "${USERPROFILE}/scripts/devon.bat"
+      fi
+      doFail "To prevent windows file locking errors, we update async in background now.\nPlease wait a minute and then rerun 'devon ide update' to complete."
+    fi
+  fi
+}
+
+function doUpdateSettings() {
+  if [ ! -d "${SETTINGS_PATH}" ]
+  then
+    if [ -n "${1}" ]
+    then
+      SETTINGS_URL="${1}"
+    fi
+    if [ -z "${SETTINGS_URL}" ]
+    then
+      if doIsBatch
+      then
+        SETTINGS_URL="-"
+      else
+        echo "Missing your settings at ${SETTINGS_PATH} and no SETTINGS_URL is defined."
+        echo "Further details can be found here:"
+        echo "https://github.com/devonfw/ide/blob/master/documentation/settings.asciidoc"
+        echo "Please contact the technical lead of your project to get the SETTINGS_URL for your project."
+        echo "In case you just want to test devonfw-ide you may simply hit return to install default settings."
+        echo
+        read -r -p "Settings URL: " answer
+        if [ -z "${answer}" ]
+        then
+          SETTINGS_URL="-"
+        else
+          SETTINGS_URL="${answer}"
+        fi
+      fi
+    fi
+    if [ "${SETTINGS_URL}" == "-" ]
+    then
+      SETTINGS_URL="https://github.com/devonfw/ide-settings.git"
+    fi
+    doInstall "${SETTINGS_PATH}" "${SETTINGS_URL}" "devonfw-ide-settings"
+    if [ ! -f "${SETTINGS_PATH}/devon/conf/devon.properties" ]
+    then
+      doFail "Installation of settings failed!\nFile not found: ${SETTINGS_PATH}/devon/conf/devon.properties"
+    fi
+    if [ ! -d "${SETTINGS_PATH}/.git" ]
+    then
+      cd "${SETTINGS_PATH}" || exit 255
+      git init
+      git add .
+      git commit -m "Initial settings downloaded from ${SETTINGS_URL}"
+      cd - || exit 255
+    fi
+  fi
+}
+
+# $1: current folder in ${SETTINGS_PATH}/devon
+# $2: current folder in ${DEVON_IDE_HOME}
+function doSetupConf() {
+  for template in "${1}/"* "${1}/".*
+  do
+    local basename="${template/*\//}"
+    if [ "${basename}" != "." ] && [ "${basename}" != ".." ] && [ "${basename}" != '*' ]
+    then
+      local conf="${2}/${basename}"
+      if [ -d "${template}" ]
+      then
+        mkdir -p "${conf}"
+        doSetupConf "${template}" "${conf}"
+      elif [ -f "${template}" ]
+      then
+        if [ -f "${conf}" ]
+        then
+          doEcho "Configuration ${conf} already exists - skipping to copy from ${template}."
+        else
+          doEcho "Copying template ${template} to ${conf}."
+          cp "${template}" "${conf}"
+        fi
+      fi
+    fi
+  done
+}
+
+# $1: devon or devon.bat
+function doUpdateCliScript() {
+  # shellcheck disable=SC2007
+  local my_ide_version="3.2.2"
+  if [ "${my_ide_version}" = "0" ]
+  then
+    return
+  fi
+  local current_devon_version
+  local devon_cli
+  if [ "${1}" = "devon.bat" ]
+  then
+    if ! doIsWindows
+    then
+      return
+    fi
+    devon_cli="${DEVON_HOME_DIR}/scripts/devon.bat"
+  elif [ "${1}" = "devon" ]
+  then
+    devon_cli="${DEVON_HOME_DIR}/.devon/devon"
+  else
+    doFail "Illegal argument: doUpdateCliScript ${1}"
+  fi
+  if [ -f "${devon_cli}" ]
+  then
+    current_devon_version="$("${devon_cli}" -v)"
+    doVersionCompare "${my_ide_version}" "${current_devon_version}"
+    if [ "$?" = "1" ]
+    then
+      echo "Updating ${devon_cli} from ${current_devon_version} to ${my_ide_version}..."
+      cp "${DEVON_IDE_HOME}/scripts/${1}" "${devon_cli}"
+    fi
+  fi
+}
+
+function doUpdateCli() {
+  doUpdateCliScript devon
+  doUpdateCliScript devon.bat
+}
+
+function doSetup() {
+  doUpdateCli
+  doUpdateSettings "${@}"
+  if [ ! -f "${SETTINGS_PATH}/devon.properties" ]
+  then
+    doDownload "https://raw.githubusercontent.com/devonfw/ide-settings/master/devon.properties" "devon.properties" "${SETTINGS_PATH}"
+  fi
+  if [ ! -d "${SETTINGS_PATH}/devon" ]
+  then
+    doEcho "Your settings are missing the 'devon' folder. Please ask your technical lead to properly merge and update your settings."
+    doDownload "https://raw.githubusercontent.com/devonfw/ide-settings/master/devon/conf/devon.properties" "devon.properties" "${SETTINGS_PATH}/devon/conf"
+    doDownload "https://raw.githubusercontent.com/devonfw/ide-settings/master/devon/conf/.m2/settings.xml" "settings.xml" "${SETTINGS_PATH}/devon/conf/.m2"
+    doDownload "https://raw.githubusercontent.com/devonfw/ide-settings/master/devon/conf/npm/.npmrc" ".npmrc" "${SETTINGS_PATH}/devon/conf/npm"
+  fi
+  if [ -d "${SETTINGS_PATH}/devon" ]
+  then
+    doSetupConf "${SETTINGS_PATH}/devon" "${DEVON_IDE_HOME}"
+  fi
+  if [ -f "${DEVON_IDE_HOME}/variables" ] || [ -f "${DEVON_IDE_HOME}/variables.bat" ]
+  then
+    echo "Found old oasp4j-ide installation. Trying to migrate to devonfw-ide automatically..."
+    if [ -f "${DEVON_IDE_HOME}/variables-customized.bat" ]
+    then
+      echo -e "\n# Migrated from variables-customized.bat" >> "${DEVON_IDE_HOME}/conf/devon.properties"
+      grep "^set" "${DEVON_IDE_HOME}/variables-customized.bat" | sed 's/set //' >> "${DEVON_IDE_HOME}/conf/devon.properties"
+      doBackup "${DEVON_IDE_HOME}/variables-customized.bat"
+    fi
+    if [ -f "${DEVON_IDE_HOME}/variables-customized" ]
+    then
+      echo -e "\n# Migrated from variables-customized" >> "${DEVON_IDE_HOME}/conf/devon.properties"
+      cat "${DEVON_IDE_HOME}/variables-customized" >> "${DEVON_IDE_HOME}/conf/devon.properties"
+      doBackup "${DEVON_IDE_HOME}/variables-customized"
+    fi
+    doBackup "${DEVON_IDE_HOME}/console-cygwin.bat"
+    doBackup "${DEVON_IDE_HOME}/console-git-bash.bat"
+    doBackup "${DEVON_IDE_HOME}/console.bat"
+    doBackup "${DEVON_IDE_HOME}/create-or-update-workspace"
+    doBackup "${DEVON_IDE_HOME}/create-or-update-workspace.bat"
+    doBackup "${DEVON_IDE_HOME}/env.sh"
+    doBackup "${DEVON_IDE_HOME}/ps-console.bat"
+    doBackup "${DEVON_IDE_HOME}/s2-init.bat"
+    doBackup "${DEVON_IDE_HOME}/s2-create.bat"
+    doBackup "${DEVON_IDE_HOME}/update-all-workspaces"
+    doBackup "${DEVON_IDE_HOME}/update-all-workspaces.bat"
+    doBackup "${DEVON_IDE_HOME}/variables"
+    doBackup "${DEVON_IDE_HOME}/variables.bat"
+    doBackup "${DEVON_IDE_HOME}/initialize.sh"
+    doBackup "${DEVON_IDE_HOME}/uninstallUI.sh"
+    doBackup "${DEVON_IDE_HOME}/devcon"
+    doBackup "${DEVON_IDE_HOME}/devcon.bat"
+    doBackup "${DEVON_IDE_HOME}/devon"
+    doBackup "${DEVON_IDE_HOME}/devon.bat"
+  fi
+  if [ -z "${DEVON_IDE_TOOLS}" ]
+  then
+    doFail "Variable DEVON_IDE_TOOLS is undefined. Please check your configuration (devon.properties)."
+  fi
+  doUpdateSoftware
+  if doIsWindows
+  then
+    if [ -e "${DEVON_IDE_HOME}/console.bat" ]
+    then
+      echo -e "@echo off\r\npushd %~dp0\r\ncall devon.bat\r\npopd\r\ncmd\r\n" > "${DEVON_IDE_HOME}/console.bat"
+    fi
+  fi
+}
+
+function doUpdateSoftware() {
+  for tool in "${DEVON_IDE_TOOLS[@]}"
+  do
+    doEcho "\n*** Setting up ${tool} ***"
+    doDevonCommand "${tool}" setup
+  done
+  default_repo=
+  for tool in "${DEVON_IDE_CUSTOM_TOOLS[@]}"
+  do
+    software="${tool%%:*}"
+    if [ -n "${software}" ]
+    then
+      tool="${tool#*:}"
+      software_version="${tool%%:*}"
+      if [ -n "${software_version}" ]
+      then
+        doEcho "\n*** Setting up ${software} ***"
+        tool="${tool#*:}"
+        arch=""
+        if [ "${tool:0:4}" = "all:" ]
+        then
+          arch="-"
+          tool="${tool:4}"
+        fi
+        repo="${tool}"
+        if [ -n "${repo}" ]
+        then
+          if [ -z "${default_repo}" ]
+          then
+            default_repo="${repo}"
+          fi
+        else
+          if [ -z "${default_repo}" ]
+          then
+            doFail "Illegal value DEVON_IDE_CUSTOM_TOOLS=${DEVON_IDE_CUSTOM_TOOLS}\nFirst entry has to contain software repository."
+          else
+            repo="${default_repo}"
+          fi
+        fi
+        doInstall "${DEVON_IDE_HOME}/software/${software}" "-" "${software}" "${software_version}" ".tgz" "${arch}" "${repo}"
+      fi
+    fi
+  done
+}
+
+# $1: home directory
+function doUninstallFromHome() {
+  if [ -f "${1}/.bashrc" ]
+  then
+    doEcho "Uninstalling from ${1}/.bashrc"
+    grep -v '^alias devon="source ~/.devon/devon"$' "${1}/.bashrc" | grep -v '^devon$' > "${DEVON_IDE_HOME}/updates/.bashrc" && mv "${DEVON_IDE_HOME}/updates/.bashrc" "${1}/.bashrc"
+  fi
+  if [ -f "${1}/.zshrc" ]
+  then
+    doEcho "Uninstalling from ${1}/.zshrc"
+    grep -v '^alias devon="source ~/.devon/devon"$' "${1}/.zshrc" | grep -v '^devon$' > "${DEVON_IDE_HOME}/updates/.zshrc" && mv "${DEVON_IDE_HOME}/updates/.zshrc" "${1}/.zshrc"
+  fi
+  if [ -f "${1}/scripts/devon" ]
+  then
+    doRunCommand "rm '${1}/scripts/devon'"
+  fi
+  doRunCommand "rm -rf '${1}/.devon'"
+}
+
+function doUninstall() {
+  doEcho "Uninstalling devonfw-ide..."
+  mkdir -p "${DEVON_IDE_HOME}/updates"
+  doUninstallFromHome ~
+  if doIsWindows
+  then
+    if [ "${OSTYPE}" = "cygwin" ]
+    then
+      local winhome
+      winhome="$(cygpath "${USERPROFILE}")"
+      doUninstallFromHome "${winhome}"
+      doRunCommand "rm -f '${winhome}/scripts/devon.bat'"
+    else
+      if [ -d "/c/cygwin64" ]
+      then
+        doUninstallFromHome "/c/cygwin64/home/${USER}"
+      elif [ -d "/c/cygwin" ]
+      then
+        doUninstallFromHome "/c/cygwin/home/${USER}"
+      fi
+      doRunCommand "rm -f '${USERPROFILE}/scripts/devon.bat'"
+    fi
+    reg import "${DEVON_IDE_HOME}/system/windows/devon-uninstall.reg"
+  fi
+  echo "So sad that you did not like devonfw-ide. It has been uninstalled from your system."
+  echo "You can now manually delete ${DEVON_IDE_HOME} to remove it completely."
+  echo "Goodbye and have a nice day!"
+}
+
+target_version="LATEST"
+
+case "${DEVON_IDE_HOME}" in
+  *\ * )
+   doConfirmWarning "Your devonfw-ide installation path contains whitespace(s):\n${DEVON_IDE_HOME}\nThis will cause severe bugs (https://github.com/devonfw/ide/issues/100)!\nWe strongly encourage you to abort and choose a different installation path."
+   ;;
+esac
+
+# CLI
+if [ "${1}" = "-h" ] || [ "${1}" = "help" ]
+then
+  echo "Setup and update devonfw-ide."
+  echo
+  echo "Arguments:"
+  echo "setup [«SETTINGS_URL»]           setup devonfw-ide (getting the scripts from the given URL)"
+  echo "update scripts [to «version»]    update (or downgrade) devonfw-ide-scripts (to specified or latest version)"
+  echo "update settings                  update settings (git pull)"
+  echo "update software                  update all software tools to configured version"
+  echo "update all                       update scripts, settings and software"
+  echo "update                           update settings and software"
+  echo "uninstall                        uninstall devonfw-ide and remove all OS hooks (revert devon ide setup)"
+  exit
+elif [ "${1}" = "setup" ]
+then
+  shift
+  while doParseOption "${1}"
+  do
+    shift
+  done
+  doSetup "${@}"
+elif [ "${1}" = "uninstall" ]
+then
+  doUninstall
+elif [ "${1}" = "update" ]
+then
+  if [ -z "${2}" ]
+  then
+    doUpdateSettings
+    doUpdateSoftware
+  else
+    if [ "${3}" = "to" ] && [ "${2}" = "scripts" ]
+    then
+      if [ -z "${4}" ]
+      then
+        doFail "Missing version argument!\ndevon ide update scripts to «version»"
+      fi
+      target_version="${4}"
+    elif [ -n "${3}" ]
+    then
+      doFail "Undefined update argument ${3}!"
+    fi
+    if [ "${2}" = "scripts" ]
+    then
+      doUpdateScripts
+    elif [ "${2}" = "settings" ]
+    then
+      doUpdateSettings
+    elif [ "${2}" = "software" ]
+    then
+      doUpdateSoftware
+    elif [ "${2}" = "all" ]
+    then
+      doUpdateScripts
+      doUpdateSettings
+      doUpdateSoftware
+    else
+      doFail "Undefined package ${2}"
+    fi
+  fi
+  exit
+elif [ -z "${1}" ]
+then
+  doFail "Unknown argument: ${1}"
+else
+  doFail "Missing arguments. Call 'devon help ide' to get help."
+fi
+echo
+echo "Completed ${*}"

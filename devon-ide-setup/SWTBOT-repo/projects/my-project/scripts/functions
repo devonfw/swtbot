@@ -1,0 +1,1138 @@
+#!/usr/bin/env bash
+# Functions to be reused in devonfw-ide commands. Will actually be sourced,
+# hash bang only for filetype detection and editor syntax support
+
+if [ -z "${DEVON_IDE_HOME}" ]
+then
+  cd "$(dirname "${BASH_SOURCE:-$0}")/.." || exit 1
+  DEVON_IDE_HOME="${PWD}"
+  cd - > /dev/null || exit 1
+  echo "DEVON_IDE_HOME variable set to ${DEVON_IDE_HOME}"
+fi
+
+# shellcheck source=scripts/environment-project
+source "${DEVON_IDE_HOME}/scripts/environment-project"
+DEVON_DOWNLOAD_DIR="${DEVON_HOME_DIR}/Downloads"
+
+# $1: message (may contain newlines with \n)
+# $2: optional exit code
+function doFail() {
+  doEchoAttention ""
+  echo -e "ERROR: ${1}"
+  echo "We are sorry for the inconvenience. Please check the above errors, resolve them and try again."
+  if [ -n "${2}" ]
+  then
+    echo "Exit code was ${2}"
+    exit "${2}"
+  else
+    exit 255
+  fi
+}
+
+function doEchoAttention() {
+  echo
+  echo "******** ATTENTION ********"
+  if [ -n "${1}" ]
+  then
+    echo -e "${@}"
+  fi
+}
+
+# $1: message
+# $2: exit code
+function doResult() {
+  if [ "${2}" = 0 ]
+  then
+    doEcho "Succeeded to ${1}"
+  else
+    if [ -z "${2}" ]
+    then
+      doFail "Failed to ${1} (internal error missing exit code)"
+    else
+      doFail "Failed to ${1}" "${2}"
+    fi
+  fi
+}
+
+# $1: command
+# $2: message
+# $3: optional working directory
+function doRunCommand() {
+  local cwd=${PWD}
+  if [ -n "${3}" ]
+  then
+    if [ -d "${3}" ]
+    then
+      cd "${3}" || exit 1
+    else
+      doFail "Working directory ${3} does not exist."
+    fi
+  fi
+  doDebug "Running command: ${1}"
+  eval "${1}"
+  result=${?}
+  if [ -n "${3}" ]
+  then
+    cd "${cwd}" || exit 1
+  fi
+  local message
+  if [ -z "${2}" ]
+  then
+    message="run command ${1/ */}"
+  else
+    message="${2} (${1/ */})"
+  fi
+  if [ ${result} = 0 ]
+  then
+    doDebug "Succeeded to ${message}"
+  else
+    doEcho "Failed to run command: ${1}"
+    doFail "Failed to ${message}" ${result}
+  fi
+}
+
+function doIsForce() {
+  [ -n "${force}" ]
+  return
+}
+
+function doIsBatch() {
+  [ -n "${batch}" ]
+  return
+}
+
+function doIsQuiet() {
+  [ -n "${quiet}" ]
+  return
+}
+
+function doIsDebug() {
+  [ -n "${debug}" ] && [ -z "${quiet}" ]
+  return
+}
+
+# $1: basename of folder
+function doIsIgnoredFolder() {
+  case "${1}" in
+   target)
+     return;;
+   eclipse-target)
+     return;;
+   node_modules)
+     return;;
+   .git)
+     return;;
+   .svn)
+     return;;
+  esac
+  return 255
+}
+
+# $@: messages to output
+function doEcho() {
+  if doIsQuiet
+  then
+    return
+  fi
+  echo -e "${@}"
+}
+
+function doDebug() {
+  if ! doIsDebug
+  then
+    return
+  fi
+  echo -e "${@}"
+}
+
+# $@: warning message
+function doWarning() {
+  echo -e "WARNING: ${*}"
+}
+
+# $@: warning message
+function doConfirmWarning() {
+  doWarning "${@}"
+  echo
+  doAskToContinue ""
+}
+
+# $1: optional question
+# $2: if 'return' will return with 255 otherwise exit if not continued
+function doAskToContinue() {
+  local question="Do you want to continue? "
+  if [ -n "${1}" ]
+  then
+    question="${1}"
+  fi
+  if [ -n "${force}" ]
+  then
+    doEcho "${question}"
+    return
+  fi
+  if [ -z "${batch}" ] 
+  then
+    local answer
+    while true
+    do
+      echo -e "${question}"
+      read -r -p "(yes/no): " answer
+      if [ "${answer}" = "yes" ] || [ -z "${answer}" ]
+      then
+        return
+      elif [ "${answer}" = "no" ]
+      then
+        doEcho "No..."
+        if [ "${2}" = "return" ]
+        then
+          return 255
+        else
+          exit 255
+        fi
+      else
+        echo "Please answer yes or no (or hit return for yes)."
+      fi
+    done
+  fi
+}
+
+function doLogo() {
+  local logo=(
+"     ..........  ///                                                                                                   "
+"    ..........  /////                  dd                                                      fffff                   "
+"   ..........  ////////               ddd                                                     ffffff                   "
+"  ..........  //////////              ddd                                                     ff                       "
+" ..........    //////////        dddddddd   eeeeeee  vvv         vvv   oooo      nnnnnn     fffffff ww               ww"
+"..........      //////////     dddddddddd  eeeeeeeeee vvv       vvv oooooooooo  nnnnnnnnnn  fffffff  ww      w      ww "
+"..........       //////////   dddd    ddd eeee    eee  vvv     vvv oooo    oooo nnn     nnn   ff      ww    www    ww  "
+"..........      //////////    ddd     ddd eeeeeeeeeee   vvv   vvv  ooo      ooo nnn      nnn  ff       ww  wwwww  ww   "
+" ..........    //////////     ddd     ddd eeeeeeeeeee    vvvvvvv   ooo      ooo nnn      nnn  ff        ww wwwww ww    "
+"  ..........  //////////       ddd    ddd eeee            vvvvv     ooo    ooo  nnn      nnn  ff         wwww wwww     "
+"   ........  //////////         dddddddd   eeeeeeeeee      vvv       oooooooo   nnn      nnn  ff          ww   ww      "
+"     .....  //////////            ddddd      eeeeee         v          oooo     nnn      nnn  ff           w   w       "
+"      ...  //////////                                                                                                  "
+  )
+  local len
+  len="$(tput cols)"
+  if [ "$?" != 0 ]
+  then
+    len=80
+  fi
+  if [ "${len}" -gt 120 ]
+  then
+    len=120
+  fi
+  for ((i=0; i<${#logo[*]}; i=i+1))
+  do
+    echo "${logo[${i}]:0:$len}"
+  done
+}
+
+function doLicenseAgreement() {
+  if ! [ -f "${DEVON_HOME_DIR}/.devon/.license.agreement" ]
+  then
+    echo
+    doLogo
+    echo
+    echo "Welcome to devonfw-ide!"
+    echo "This product and its 3rd party components is open-source software and can be used free (also commercially)."
+    echo "However, before using it you need to read and accept the terms of use with all involved licenses agreements."
+    echo "With confirming you take notice and agree that there is no warranty for using this product and its 3rd party components."
+    echo "You are solely responsible for all risk implied by using this software."
+    echo "You will be able to find it in one of the following locations:"
+    echo "${DEVON_IDE_HOME}/TERMS_OF_USE.asciidoc"
+    echo "https://github.com/devonfw/ide/blob/master/TERMS_OF_USE.asciidoc"
+    echo
+    if doIsBatch
+    then
+      doFail "You need to accept these terms of use and all license agreements. Please rerun in interactive (non-batch) mode."
+    fi
+    while true
+    do
+      read -r -p "Do you accept these terms of use and all license agreements? (yes/no) " answer
+      case "${answer}" in
+        yes)
+          echo -e "On $(date +"%Y-%m-%d") at $(date +"%H:%M:%S") you accepted the devonfw-ide terms of use.\nhttps://github.com/devonfw/ide/blob/master/TERMS_OF_USE.asciidoc" > "${DEVON_HOME_DIR}/.devon/.license.agreement"
+          break;;
+        no)
+          exit 255;;
+        *)
+          echo "Please answer yes or no.";;
+      esac
+    done
+    echo
+  fi
+}
+
+# ${1}: devon command name
+# ${n+1}: additional args
+function doDevonCommand() {
+  doDevonCommandAndReturn "${@}"
+  result=${?}
+  if [ ${result} != 0 ]
+  then
+    exit ${result}
+  fi
+}
+
+function doDevonCommandAllWorkspaces() {
+  cd "${DEVON_IDE_HOME}/workspaces" || exit 1
+  for file in *
+  do
+    if [ -d "${file}" ]
+    then
+      cd "${file}" || exit 1
+      doEcho "Repeating command ${*} in workspace ${PWD}"
+      "${DEVON_IDE_HOME}/scripts/devon" "${@}"
+      cd .. || exit 1
+    elif [ "${file}" != "readme.txt" ]
+    then
+      doWarning "The workspaces should only contain folder but ${file} is not"
+    fi
+  done
+}
+
+function doDevonCommandAndReturn() {
+  if [ -z "${1}" ]
+  then
+    doFail "Command is required and can not be omitted!"
+  fi
+  local command_name="${1}"
+  local command="${DEVON_IDE_HOME}/scripts/command/${1}"
+  if [ ! -e "${command}" ]
+  then
+    doFail "Undefined devon command: ${1}\nNot found at ${command}."
+  else
+    if [ ! -x "${command}" ]
+    then
+      doEcho "Command ${1} is not executable. Trying to repair..."
+      chmod a+x "${command}"
+    fi
+    shift
+    # shellcheck disable=SC2086
+    "${command}" ${force} ${quiet} ${batch} "${@}"
+    result=${?}
+    if [ ${result} != 0 ]
+    then
+      doEcho "ERROR: command '${command_name} ${*}' failed with exit code ${result}"
+      return ${result}
+    fi
+  fi  
+}
+
+# $1: the URL to download
+# $2: the optional, explicit filename to save to
+# $3: the optional, target directory to save to
+function doDownload() {
+  doLicenseAgreement
+  local target_dir
+  if [ -z "${3}" ]
+  then
+    target_dir="${DEVON_DOWNLOAD_DIR}"
+  else
+    target_dir="${3}"
+  fi
+  local filename
+  if [ -n "${2}" ]
+  then
+    filename="${2}"
+  else
+    filename="${1/*\//}"
+  fi
+  local target="${target_dir}/${filename}"
+  if [ -f "${target}" ] && [ -z "${force}" ]
+  then
+    doEcho "Artifact already exists at ${target}"
+    doEcho "To force update please delete the file and run again."
+    return 255
+  fi
+  mkdir -p "${target_dir}"
+  doEcho "Downloading ${filename} from ${1}"
+  local curl_opt=""
+  if [ -n "${quiet}" ]
+  then
+    curl_opt="--silent"
+  fi
+  curl ${curl_opt} -fL "${1}" -o "${target_dir}/${filename}"
+  result=${?}
+  if [ "${result}" != 0 ]
+  then
+    doFail "Failed to download ${filename} from ${1}" ${result}
+  fi
+}
+
+# $1: the file to extract
+# $2: optional folder to extract to
+function doExtract() {
+  local target_dir=${DEVON_IDE_HOME}/updates/extracted
+  local filename=${1/*\//}
+  rm -rf "${target_dir}"
+  if [ -n "${2}" ]
+  then
+    target_dir="${target_dir}/${2}"
+  fi
+  mkdir -p "${target_dir}"
+  local ext="${filename/*\./.}"
+  local filename_base="${filename:0:(${#filename}-${#ext})}"
+  if [ "${filename_base/*\./.}" = ".tar" ] || [ "${ext}" = ".tar" ] || [ "${ext}" = ".tgz" ] || [ "${ext}" = ".tbz2" ]
+  then
+    doRunCommand "tar xf '${1}' -C '${target_dir}'"
+  elif [ "${ext}" = ".zip" ]
+  then
+    doRunCommand "unzip -q '${1}' -d '${target_dir}'"
+  elif [ "${ext}" = ".dmg" ]
+  then
+    local mount_dir="${DEVON_IDE_HOME}/updates/volume"
+    mkdir -p "${mount_dir}"
+    doRunCommand "hdiutil attach -quiet -nobrowse -mountpoint '${mount_dir}' '${1}'"
+    doRunCommand "cp -a '${mount_dir}'/*.app '${target_dir}'"
+    doRunCommand "hdiutil detach -force '${mount_dir}'"
+    if [ -e "${target_dir}/Applications" ]
+    then
+      rm "${target_dir}/Applications"
+    fi
+  else
+    doFail "Unknown archive format: ${ext}. Can not extract ${1}" ${result}
+  fi
+  echo "Successfully extracted archive ${filename} to updates/extracted"
+}
+
+# $1: absolute path of file or folder to move
+# $2: optional target (e.g. "${DEVON_IDE_HOME}/software/")
+# $3: backup path
+function doReplaceExtractedFile() {
+  if [ ! -e "${1}" ]
+  then
+    doFail "The file or folder to move does not exist: ${1}"
+  fi
+  local filename="${1/*\//}"
+  local target_dir="${DEVON_IDE_HOME}"
+  local target="${DEVON_IDE_HOME}/${filename}"
+  if [ -n "${2}" ]
+  then
+    target="${2}"
+    target_dir="$(dirname "${2}")"
+  fi
+  if [ "${target}" = "${DEVON_IDE_HOME}/scripts" ] && doIsWindows
+  then
+    (sleep 10;doBackup "${target}" "${3}";doRunCommand "mv '${1}' '${target}'") &
+  else
+    doBackup "${target}" "${3}"
+    if [ ! -d "${target_dir}" ]
+    then
+      echo "mkdir -p ${target_dir}"
+      mkdir -p "${target_dir}"
+    fi
+    doRunCommand "mv '${1}' '${target}'"
+  fi
+}
+
+# $1: source file or directory to backup
+# $2: optional relative timestamp path
+function doBackup() {
+  if [ -e "${1}" ]
+  then
+    local source="${1}"
+    local timestamp="${2}"
+    if [ -z "${timestamp}" ]
+    then
+      timestamp="$(date "+%y-%m-%d")"
+    fi
+    local backup_dir="${DEVON_IDE_HOME}/updates/backups/${timestamp}"
+    if [ -e "${backup_dir}/${source/*\//}" ]
+    then
+      backup_dir="${backup_dir}/$(date "+%H-%M-%S")"
+    fi
+    mkdir -p "${backup_dir}"
+    echo "Creating backup by moving existing ${source} to ${backup_dir}"
+    mv "${source}" "${backup_dir}/"
+  fi
+}
+
+# $1: path of the extracted name to install (move to target)
+# $2: optional target (e.g. "${DEVON_IDE_HOME}/software/")
+# $3: backup path
+# $4-$N: contents of $1
+function doReplaceExtractedSkipSingleFolder() {
+  local source_dir="${1}"
+  local target_dir="${2}"
+  local backup_dir="${3}"
+  shift 3
+  
+  if [ "${#*}" == 1 ] && [ -d "${1}" ] && [[ ! "${1}" =~ .*\.app ]]
+  then
+    source_dir="${1}"
+  fi
+  doReplaceExtractedFile "${source_dir}" "${target_dir}" "${backup_dir}"
+}
+
+# $1: path of the extracted name to install (move to target)
+# $2: target (e.g. "${DEVON_IDE_HOME}/software/")
+function doReplaceExtracted() {
+  local backup_dir
+  backup_dir="$(date +"%y-%m-%d")"
+  if [ "${2}" = "${DEVON_IDE_HOME}" ]
+  then
+    for extracted_file in "${1}"/*
+    do
+      if [ -e "${extracted_file}" ]
+      then
+        if [ "${extracted_file/*\//}" == "workspaces" ]
+        then
+          doEcho "as the target already exists, omitting ${extracted_file}"
+        else
+          doReplaceExtractedFile "${extracted_file}" "${2}/${extracted_file/*\//}" "${backup_dir}"
+        fi
+      fi
+    done
+  else
+    doReplaceExtractedSkipSingleFolder "${1}" "${2}" "${backup_dir}" "${1}"/*
+  fi
+}
+
+# $1: URL (to artifactId)
+function doMavenGetLatestVersion() {
+  echo "Trying to determine the latest available version from ${1}/maven-metadata.xml"
+  LATEST_VERSION="$(curl -fs "${1}/maven-metadata.xml" | grep latest | sed "s/.*<latest>\([^<]*\)<\/latest>.*/\1/")"
+  result=${?}
+  if [ "${result}" != 0 ] || [ -z "${LATEST_VERSION}" ]
+  then
+    doFail "Failed to determine the latest version from ${1}/maven-metadata.xml.\nCheck that 'curl' is installed (curl -v) and you have internet connection available." ${result}
+  fi
+}
+
+# defaults, may be overridden before calling doMavenArchetype
+ARCHETYPE_GROUP_ID="com.devonfw.java.templates"
+ARCHETYPE_ARTIFACT_ID="devon4j-template-server"
+
+# ${1}-${n-1}: array
+# ${n}: prefix to check if array contains element starting with
+function doArrayContainsItemWithPrefix() {
+  local n
+  local element
+  n=${#}
+  element="${!n}"
+  for ((i=1; i < ${#}; i++)) {
+    if [[ "${!i}" == ${element}* ]]
+    then
+      return 0
+    fi
+  }
+  return 1
+}
+
+# $1: java package
+# $2: optional groupId
+# $3: optional artifactId 
+function doMavenArchetype() {
+  if [ -z "${1}" ]
+  then
+    doFail "Missing arguments for doMavenArchetype ${*}"
+  fi
+  local old_args
+  old_args="${*}"
+  local target_package
+  local target_group_id
+  local target_artifact_id
+  declare -a target_args
+  while [ -n "${1}" ]
+  do
+    if [ "${1:0:1}" = "-" ]
+    then
+      target_args+=("${1}")
+    else
+      if [ -z "${target_package}" ]
+      then
+        target_package="${1}"
+      elif [ -z "${target_group_id}" ]
+      then
+        target_group_id="${1}"
+      elif [ -z "${target_artifact_id}" ]
+      then
+        target_artifact_id="${1}"
+      else
+        doFail "Too many args: ${*}"
+      fi
+    fi
+    shift
+  done
+  if [ -n "${target_package}" ]
+  then
+    # package
+    if doArrayContainsItemWithPrefix "${target_args[@]}" "-Dpackage="
+    then
+      doFail "Duplicate package for archetype: ${old_args}"
+    else
+      target_args+=("-Dpackage=${target_package}")
+    fi
+    # artifactId
+    if doArrayContainsItemWithPrefix "${target_args[@]}" "-DartifactId="
+    then
+      if [ -n "${target_artifact_id}" ]
+      then
+        doFail "Duplicate artifactId for archetype: ${old_args}"
+      fi
+    else
+      if [ -z "${target_artifact_id}" ]
+      then
+        target_artifact_id="${target_package/*\./}"
+      fi
+      target_args+=("-DartifactId=${target_artifact_id}")
+    fi
+    # groupId
+    if doArrayContainsItemWithPrefix "${target_args[@]}" "-DgroupId="
+    then
+      if [ -n "${target_group_id}" ]
+      then
+        doFail "Duplicate groupId for archetype: ${old_args}"
+      fi
+    else
+      if [ -z "${target_group_id}" ]
+      then
+        local artifact_id="${target_package/*\./}"
+        if [ "$artifact_id" = "${target_package}" ]
+        then
+          target_group_id="${target_package}"
+        else
+          target_group_id="${target_package:0:(${#target_package}-${#artifact_id}-1)}"
+        fi
+      fi
+      target_args+=("-DgroupId=${target_group_id}")
+    fi
+  fi
+  if ! doArrayContainsItemWithPrefix "${target_args[@]}" "-Dversion="
+  then
+    target_args+=("-Dversion=1.0.0-SNAPSHOT")
+  fi
+  if ! doArrayContainsItemWithPrefix "${target_args[@]}" "-DarchetypeVersion="
+  then
+    doMavenGetLatestVersion "https://repo.maven.apache.org/maven2/${ARCHETYPE_GROUP_ID//.//}/${ARCHETYPE_ARTIFACT_ID}"
+    target_args+=("-DarchetypeVersion=${LATEST_VERSION}")
+  fi
+  if [ -z "${target_artifact_id}" ]
+  then
+    for ((i=1; i < ${#}; i++)) {
+      if [[ "${!i}" == -DartifactId=* ]]
+      then
+        target_artifact_id="${!i:13}" # "-DartifactId=" is 13 chars long
+      fi
+    }
+  fi
+  if [ -e "${target_artifact_id}" ]
+  then
+    doFail "Project ${target_artifact_id} already exists at ${PWD}"
+  fi
+  doDevonCommand mvn archetype:generate "-DarchetypeGroupId=${ARCHETYPE_GROUP_ID}" "-DarchetypeArtifactId=${ARCHETYPE_ARTIFACT_ID}" -DinteractiveMode=false "${target_args[@]}"
+}
+
+# $1: target path (e.g. "${DEVON_IDE_HOME}/software/")
+# $2: URL (to groupId)
+# $3: artifactId
+# $4: version ('LATEST' for the most recent version)
+# $5: suffix (e.g. '-sources.jar')
+# $6: currentVersion
+function doUpgradeMavenArtifact() {
+  doLicenseAgreement
+  if [ -d "${1}/.git" ]
+  then
+    echo "Found git repository ${1} - updating via git"
+    doGitPullOrClone "${1}"
+    return ${?}
+  fi
+  local download_url="${2}"
+  local artifact_id="${3}"
+  download_url="${download_url}/${artifact_id}"
+  local target_version="${4}"
+  local suffix="${5}"
+  local current_version="${6}"
+  local current_repo="${DEVON_SOFTWARE_REPOSITORY}"
+  if [ "${current_version}" = "0" ]
+  then
+    return 1
+  fi
+  echo "*** Software Update of ${artifact_id} ***"
+  echo "Updating ${1} from ${download_url}"
+  if [ "${target_version}" = "LATEST" ]
+  then
+    doMavenGetLatestVersion "${download_url}"
+    target_version="${LATEST_VERSION}"
+    DEVON_SOFTWARE_REPOSITORY=
+  fi
+  if [ -n "${current_version}" ]
+  then
+    doVersionCompare "${target_version}" "${current_version}"
+    result=${?}
+    if [ "${result}" = 0 ]
+    then
+      echo "The ${artifact_id} package is already at the correct version ${target_version}"
+      return 1
+    else
+      echo "You are using version ${current_version} of ${artifact_id} "
+      echo "The new version to install is ${target_version}"
+      if [ "${result}" = 2 ] && [ "${4}" = "LATEST" ]
+      then
+        echo "You are using a newer version than the latest release version."
+        echo "Hence there is nothing to update."
+        echo "Seems as you are an active devonfw developer. Thanks for contributing!"
+        return 1
+      fi
+    fi
+  fi
+  if [[ "${target_version}" =~ alpha|beta|rc|pre|test ]]
+  then 
+    doAskToContinue "Latest version seems unstable: ${target_version}\nAre you sure you want to install this version?"
+  fi
+  download_url="${download_url}/${target_version}/${artifact_id}-${target_version}${suffix}"
+  doInstall "${1}" "${download_url}" "${artifact_id}" "${target_version}" "${suffix}" "-"
+  DEVON_SOFTWARE_REPOSITORY="${current_repo}"
+}
+
+# $1: target
+# $2: source
+function doMoveGlobSafe() {
+  if [ -e "${2}" ]
+  then
+    echo "Moving ${2} to ${1}"
+    mv "${2}" "${1}"
+  fi
+}
+
+# $1: absolute target path
+# $2: URL
+function doGitPullOrClone() {
+  if [ -d "${1}/.git" ]
+  then
+    local remotes
+    remotes=$(cd "${1}" && git remote)
+    if [ -n "${remotes}" ]
+    then
+      doRunCommand "git pull" "" "${1}"
+    else
+      echo "Can not update local git repository: ${1}"
+      return 1
+    fi
+  else
+    if [ -z "${2}" ]
+    then
+      doFail "Not a git repository: ${1}"
+    else
+      doRunCommand "git clone '${2}' '${1}' --config core.autocrlf=false"
+    fi
+  fi
+}
+
+# $1: absolute target path
+# $2: download URL
+# $3: name of software
+# $4: version of software
+# $5: optional file extension (default is taken from download URL)
+# $6: optional OS architecture indicator (e.g. '-' if architecture independent)
+# $7: optional overriden software repository (overrides URL/$2)
+function doInstall() {
+  local target_path="${1}"
+  local download_url="${2}"
+  local software="${3}"
+  local version="${4}"
+  local extension="${5}"
+  local os="${6}"
+  local software_repository="${7}"
+  if [ -z "${software_repository}" ]
+  then
+    software_repository="${DEVON_SOFTWARE_REPOSITORY}"
+  fi
+  local download_dir="${DEVON_DOWNLOAD_DIR}"
+  if [ -z "${target_path}" ] || [ -z "${download_url}" ] || [ -z "${software}" ]
+  then
+    doFail "missing arguments for doInstall: ${*}"
+  fi
+  local result=0
+  if [ "${download_url/*\./.}" = ".git" ]
+  then
+    doGitPullOrClone "${target_path}" "${download_url}"
+    return
+  fi
+  local version_file="${target_path}/.devon.software.version"
+  local current_version=
+  if [ -e "${version_file}" ]
+  then
+    current_version="$(cat "${version_file}")"
+    if [ "${current_version}" == "${version}" ]
+    then
+      doEcho "Version ${version} of ${software} is already installed."
+      return 1
+    else
+      doEcho "Updating ${software} from version ${current_version} to version ${version}..."
+    fi
+  fi
+  local dir=${target_path/*\//}
+  if [ "${target_path}" = "${DEVON_IDE_HOME}/software/${dir}" ]
+  then
+    mkdir -p "${DEVON_IDE_HOME}/software"
+  fi
+  local repo="default"
+  local filename
+  if [ -z "${version}" ]
+  then
+    filename=${download_url/*\//}
+  else
+    filename="${software}-${version}"
+    if [ -n "${os}" ]
+    then
+      if [ "${os}" != "-" ]
+      then
+        filename="${filename}-${os}"
+      fi
+    else
+      if doIsMacOs
+      then
+        filename="${filename}-mac"
+      elif doIsWindows
+      then
+        filename="${filename}-windows"
+      else
+        filename="${filename}-linux"
+      fi
+    fi
+    if [ -n "${software_repository}" ]
+    then
+      extension=".tgz"
+      download_url="${software_repository}/${software}/${version}/${filename}.tgz"
+      result=1
+      repo="${DEVON_SOFTWARE_REPOSITORY/*:\/\//}"
+      local host="${repo/\/*/}"
+      repo="${repo:${#host}}"
+      host="${host/:/_}"
+      repo="${host}/${repo//[^A-Za-z0-9._-]/_}"
+      download_dir="${download_dir}/${repo}"
+    else
+      if [ -z "${extension}" ]
+      then
+        local file="${download_url/*\//}"
+        extension=${file/*\.tar\./.tar.}
+        if [ "${extension}" = "${file}" ]
+        then
+          extension="${file/*\./.}"
+        fi
+      fi
+    fi
+    filename="${filename}${extension}"
+  fi
+  doEcho "Starting installation of ${software} to ${target_path} from ${download_url}"
+  if [ -L "${target_path}" ]
+  then
+    doEcho "Deleting old installation as it is a symlink: ${target_path}"
+    rm "${target_path}"
+  fi
+  local install_path="${target_path}"
+  if [ -n "${DEVON_SOFTWARE_PATH}" ] && [ "${target_path}" != "${DEVON_IDE_HOME}" ]
+  then
+    install_path="${DEVON_SOFTWARE_PATH}/${repo}/${software}/${version}"
+    version_file="${install_path}/.devon.software.version"
+  fi
+  if [ ! -d "${install_path}" ] || [ "${install_path}" == "${target_path}" ]
+  then
+    doDownload "${download_url}" "${filename}" "${download_dir}"
+    doExtract "${download_dir}/${filename}" "${dir}"
+    doReplaceExtracted "${DEVON_IDE_HOME}/updates/extracted/${dir}" "${install_path}"
+    if [ "${install_path}" != "${DEVON_IDE_HOME}" ]
+    then
+      echo "${version}" > "${version_file}"
+    fi
+    echo "Successfully installed ${software}"
+  else
+    doEcho "Software ${software} seems to be already available in ${install_path}"
+    result=1
+    current_version=
+    if [ -e "${version_file}" ]
+    then
+      current_version="$(cat "${version_file}")"
+    fi
+    if [ "${current_version}" != "${version}" ]
+    then
+      doFail "Installation corrupt at ${install_path}\nDetected version: ${current_version}\nExpected version: ${version}"
+    fi
+  fi
+  if [ "${target_path}" = "${DEVON_IDE_HOME}/software/${dir}" ]
+  then
+    doExtendPath "${target_path}"
+    doEcho "To be fully functional please rerun 'devon' command to update your PATH properly."
+  fi
+  if [ "${install_path}" != "${target_path}" ]
+  then
+    doBackup "${target_path}"
+    doEcho "Linking ${install_path} to ${target_path}"
+    if doIsWindows
+    then
+      cmd //c mklink "${install_path}" "${target_path}"
+      if [ "${?}" != 0 ]
+      then
+        doFail "Creating symbolic links is not supported on your windows operating system.\nPlease read the documentation how to properly configure your OS or disable this feature by removing the DEVON_SOFTWARE_PATH variable."
+      fi
+    else
+      ln -s "${install_path}" "${target_path}"
+    fi
+  fi
+  return ${result}
+}
+
+# $1: software folder to add to path
+function doExtendPath() {
+  if [ -d "${1}/bin" ]
+  then
+    export PATH="${1}/bin:${PATH}"
+  else
+    export PATH="${1}:${PATH}"
+  fi    
+}
+
+# $1: templates path
+# $2: workspace path
+# $3: configurator mode (-u / -r / -x)
+function doConfigureWorkspace() {
+  if [ ! -d "${1}" ]
+  then
+    doFail "Could not find templates path at ${1}"
+  fi
+  if [ ! -d "${2}" ]
+  then
+    doFail "Could not find workspace at ${2}"
+  fi
+  local replacement_patterns_path=${1}/replacement-patterns.properties
+  if [ ! -e "${replacement_patterns_path}" ]
+  then
+    touch "${replacement_patterns_path}"
+  fi
+  doRunConfigurator "com.devonfw.tools.ide.configurator.Configurator" -t "${1}" -w "${2}" -v "${replacement_patterns_path}" "${3}"
+  local result=${?}
+  local action="changed"
+  if [ "${3}" = "-u" ]
+  then
+    local action="updated"
+  elif [ "${3}" = "-i" ]
+  then
+    action="merged back to settings"
+  elif [ "${3}" = "-x" ]
+  then
+    action="merged back to settings (including new properties)"
+  fi
+  if [ ${result} = 0 ]
+  then
+    echo "Your workspace ${WORKSPACE} has been ${action}"  
+  else
+    doFail "Your workspace ${WORKSPACE} could not be ${action}"
+  fi
+}
+
+function doRunConfigurator() {
+  local classpath=""
+  for file in "${DEVON_IDE_HOME}/scripts/lib"/*.jar
+  do
+    if [ -z "${classpath}" ]
+    then
+      classpath="${file}"
+    else
+      classpath="${classpath}:${file}"
+    fi
+  done
+  doRunCommand "java -cp '${classpath}' ${*}"
+}
+
+# $1: name of ide
+function doCreateIdeScript() {
+  local script_file="${DEVON_IDE_HOME}/${1}-${WORKSPACE}"
+  local script_data
+  if doIsWindows
+  then
+    script_data="@echo off\r\npushd %~dp0\r\ncd workspaces/${WORKSPACE}\r\ncall devon.bat ${1}\r\npopd"
+    script_file="${script_file}.bat"
+  else
+    script_data="#\!/usr/bin/env bash\ncd \$(dirname \"\${0}\")\ncd workspaces/${WORKSPACE}\nsource ${DEVON_IDE_HOME}/scripts/devon ${1}"
+  fi
+  if [ ! -x "${script_file}" ]
+  then
+    echo -e "${script_data}" > "${script_file}"
+    chmod a+x "${script_file}"
+    echo "Created script ${script_file}"
+  fi
+}
+
+# $1: version1
+# $2: version2
+# returns 0 if equal, 1 if $1 > $2, 2 if $1 < $2
+function doVersionCompare() {
+  if [ "${1}" = "${2}" ]
+  then
+    return 0
+  fi
+  local v1="${1}."
+  local v2="${2}."
+  while [ -n "${v1}" ] || [ -n "${v2}" ]
+  do
+    local s1="${v1/[.-]*/}"
+    local s2="${v2/[.-]*/}"
+    if [ "${s1}" != "${s2}" ]
+    then
+      local p1="${v1/[^0-9]*/}"
+      local p2="${v2/[^0-9]*/}"
+      local n1="${p1}"
+      local n2="${p2}"
+      if [ -z "${n1}" ]
+      then
+        n1=0
+      fi
+      if [ -z "${n2}" ]
+      then
+        n2=0
+      fi
+      if [ ${n1} -gt ${n2} ]
+      then
+        return 1
+      elif [ ${n1} -lt ${n2} ]
+      then
+        return 2
+      else
+        if [ "${s1}" = "${s2/-SNAPSHOT/}" ]
+        then
+          return 1
+        elif [ "${s2}" = "${s1/-SNAPSHOT/}" ]
+        then
+          return 2
+        else
+          local r1="${s1:${#p1}}"
+          local r2="${s2:${#p2}}"
+          n1="${r1//[^0-9]/}"
+          n2="${r2//[^0-9]/}"
+          local x1="${r1:0:(${#r1}-${#n1})}"
+          local x2="${r2:0:(${#r2}-${#n2})}"
+          x1="${x1//[-_+]/}"
+          x2="${x2//[-_+]/}"
+          if [ "${x1}" = "${x2}" ]
+          then
+            if [ -z "${n1}" ]
+            then
+              n1=0
+            fi
+            if [ -z "${n2}" ]
+            then
+              n2=0
+            fi
+            if [ ${n1} -gt ${n2} ]
+            then
+              return 1
+            elif [ ${n1} -lt ${n2} ]
+            then
+              return 2
+            fi
+          else
+            # assuming ascii infix (alpha,beta,etc.) is less than nothing
+            if [ -z "${x1}" ]
+            then
+              return 1
+            elif [ -z "${x2}" ]
+            then
+              return 2
+            fi
+            # assuming alphabetic order fits: alpha < beta < pre < rc
+            if [ "${x1}" \> "${x2}" ]
+            then
+              return 1
+            else
+              return 2
+            fi
+          fi
+          if [ "${s1}" \> "${s2}" ]
+          then
+            return 1
+          else
+            return 2
+          fi
+        fi
+      fi
+    fi
+    v1=${v1#*[.-]}
+    v2=${v2#*[.-]}
+  done
+  return 0
+}
+
+#$1: version to increase
+function doGetNextVersion() {
+  local version="${1}"
+  local suffix="${version##*[0-9]}"
+  local prefix=""
+  local next=""
+  local begin="${version:0:(${#version}-${#suffix})}"
+  if [ -n "${begin}" ]
+  then
+    local i
+    for ((i=(${#begin}-1); i>0; i=i-1))
+    do
+      if [[ ! "${begin:(${i}):1}" =~ [0-9] ]]
+      then
+        i=${i}+1
+        break
+      fi
+    done
+    prefix="${begin:0:(${i})}"
+    next="${begin:(${i}):(${#begin}-${i})}"
+    next=$((next+1))
+  fi
+  echo "${prefix}${next}${suffix}"
+}
+
+function doIsMacOs() {
+  if [ "${OSTYPE:0:6}" = "darwin" ]
+  then
+    return
+  fi
+  return 255
+}
+
+function doIsWindows() {
+  if [ "${OSTYPE}" = "cygwin" ] || [ "${OSTYPE}" = "msys" ]
+  then
+    return
+  fi
+  return 255
+}
+
+# $1: single CLI arg
+# returns 0 if a standard option was detected and handled, 255 otherwise (regular argument to be handeled by CLI parser)
+function doParseOption() {
+  if [ -n "${end_options}" ]
+  then
+    return 255
+  fi
+  if [ "${1}" = "--" ]
+  then
+    end_options="true"
+    return
+  elif [ "${1}" = "-b" ] || [ "${1}" = "--batch" ]
+  then
+    batch="${1}"
+    return
+  elif [ "${1}" = "-f" ] || [ "${1}" = "--force" ]
+  then
+    force="${1}"
+    return
+  elif [ "${1}" = "-d" ] || [ "${1}" = "--debug" ]
+  then
+    debug="${1}"
+    return
+  elif [ "${1}" = "-q" ] || [ "${1}" = "--quiet" ]
+  then
+    quiet="${1}"
+    return
+  fi
+  return 255
+}
+
+end_options=""
+batch=""
+force=""
+quiet=""
+debug=""
+while [ -n "${1}" ] && doParseOption "${1}"
+do
+  shift
+done

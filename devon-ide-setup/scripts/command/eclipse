@@ -1,0 +1,219 @@
+#!/usr/bin/env bash
+# shellcheck source=scripts/functions
+source "$(dirname "${0}")"/../functions
+cd "${DEVON_IDE_HOME}" || exit 255
+
+# $1: plugin URL (update site)
+# $2: plugin feature group ID
+function doInstallEclipsePlugin() {
+  local plugin="${2/\.feature\.group*/}"
+  echo "Installing eclipse plugin ${plugin} from ${1}"
+  # shellcheck disable=SC2086
+  "${ECLIPSE_HOME}/eclipse" -nosplash -vm "${JAVA_HOME}/bin/java" -application org.eclipse.equinox.p2.director -repository "${1}" -installIU "${2}" -vmargs ${ECLIPSE_VMARGS}
+  result=${?}
+  if [ "${result}" != 0 ]
+  then
+    echo
+    echo "******** ATTENTION ********"
+    echo "WARNING: Installation of plugin ${plugin} failed. Please try to install manually."
+    echo
+  fi
+}
+
+function doSetup() {
+  doDevonCommand java -q setup
+  if [ -n "${1}" ] || [ ! -d "${ECLIPSE_HOME}" ]
+  then
+    #mirror="https://mirror.math.princeton.edu"
+    local mirror="https://ftp.osuosl.org"
+    local software_version="${ECLIPSE_VERSION:-2019-09}"
+    local eclipse_edition=java #jee
+    local download_url="${mirror}/pub/eclipse/technology/epp/downloads/release/${software_version}/R/eclipse-${eclipse_edition}-${software_version}-R"
+    if doIsMacOs
+    then
+      download_url="${download_url}-macosx-cocoa-x86_64.dmg"
+    elif doIsWindows
+    then
+      download_url="${download_url}-win32-x86_64.zip"
+    else
+      download_url="${download_url}-linux-gtk-x86_64.tar.gz"
+    fi
+    doInstall "${ECLIPSE_HOME}" "${download_url}" "eclipse" "${software_version}"
+    local result=${?}
+    if doIsMacOs
+    then
+      if [ ! -x "${ECLIPSE_HOME}/eclipse" ]
+      then
+        echo "Doing workarounds for MacOS quirks..."
+        echo -e "#!/usr/bin/env bash\nECLIPSE_HOME=\"\$(dirname \"\${0}\")\"\n\"\${ECLIPSE_HOME}/Eclipse.app/Contents/MacOS/eclipse\" \$@" > "${ECLIPSE_HOME}/eclipse"
+        chmod a+x "${ECLIPSE_HOME}/eclipse"
+      fi
+    fi
+    if [ "${result}" = 0 ]
+    then
+      if [ -z "${ECLIPSE_PLUGINS}" ]
+      then
+        doAddPlugin startexplorer
+        doAddPlugin regexutil
+        doAddPlugin templatevariables
+        doAddPlugin spotbugs
+        doAddPlugin checkstyle
+        doAddPlugin cobigen
+        doAddPlugin terminal
+      else
+        for ((i=0; i<${#ECLIPSE_PLUGINS[*]}; i=i+2))
+        do
+          doAddPlugin "${ECLIPSE_PLUGINS[${i}]}" "${ECLIPSE_PLUGINS[((${i}+1))]}"
+        done
+      fi
+    fi
+  fi
+  if [ -n "${1}" ]
+  then
+    if [ ! -x "${ECLIPSE_HOME}/eclipse" ]
+    then
+      doFail "Eclipse binary is not available in ${ECLIPSE_HOME}"
+    fi
+    local eclipseproduct="${ECLIPSE_HOME}/Eclipse.app/Contents/Eclipse/.eclipseproduct"
+    if [ ! -e "${eclipseproduct}" ]
+    then
+      eclipseproduct="${ECLIPSE_HOME}/.eclipseproduct"
+    fi
+    doRunCommand "cat '${eclipseproduct}'"
+  fi
+}
+
+function doConfigureEclipse() {
+  local mode="${1}"
+  if [ ! -d "${WORKSPACE_PATH}/.metadata" ]
+  then
+    if [ -z "${mode}" ]
+    then
+      mode="-u"
+    elif [ "${mode}" != "-u" ]
+    then
+      doFail "Workspace ${WORKSPACE} is not initialized.\nReverse merge is not possible."
+    fi
+  fi
+  if [ -n "${mode}" ]
+  then
+    doConfigureWorkspace "${SETTINGS_PATH}/eclipse/workspace" "${WORKSPACE_PATH}" ${mode}
+  fi
+}
+
+# $1: id
+# $2: optional URL
+function doAddPlugin() {
+  if [ -z "${2}" ]
+  then
+    if [ "${1}" = "startexplorer" ]
+    then
+      doInstallEclipsePlugin "http://basti1302.github.com/startexplorer/update/" "de.bastiankrol.startexplorer.feature.feature.group"
+    elif [ "${1}" = "cobigen" ]
+    then
+      doInstallEclipsePlugin http://de-mucevolve02/files/cobigen/updatesite/stable/ "com.devonfw.cobigen.eclipse.feature.feature.group,com.devonfw.cobigen.tempeng-freemarker,com.devonfw.cobigen.htmlplugin,com.devonfw.cobigen.javaplugin,com.devonfw.cobigen.jsonplugin,com.devonfw.cobigen.openapiplugin,com.devonfw.cobigen.propertyplugin,com.devonfw.cobigen.textmerger,com.devonfw.cobigen.tsplugin,com.devonfw.cobigen.tempeng-velocity,com.devonfw.cobigen.xmlplugin"
+    elif [ "${1}" = "terminal" ]
+    then
+      doInstallEclipsePlugin "http://download.eclipse.org/tm/terminal/marketplace" "org.eclipse.tm.terminal.feature.feature.group,org.eclipse.tm.terminal.view.feature.feature.group,org.eclipse.tm.terminal.control.feature.feature.group,org.eclipse.tm.terminal.connector.ssh.feature.feature.group,org.eclipse.tm.terminal.connector.telnet.feature.feature.group"
+    elif [ "${1}" = "anyedit" ]
+    then
+      doInstallEclipsePlugin "http://andrei.gmxhome.de/eclipse/" "AnyEditTools.feature.group"
+    elif [ "${1}" = "regexutil" ]
+    then
+      doInstallEclipsePlugin "http://regex-util.sourceforge.net/update/" "com.ess.regexutil.feature.group"
+    elif [ "${1}" = "templatevariables" ]
+    then
+      doInstallEclipsePlugin "https://m-m-m.github.io/eclipse-templatevariables/latest" "net.sf.mmm.eclipse.templatevariables.feature.feature.group"
+    elif [ "${1}" = "spotbugs" ]
+    then
+      doInstallEclipsePlugin "https://spotbugs.github.io/eclipse/" "com.github.spotbugs.plugin.eclipse.feature.group"
+    elif [ "${1}" = "checkstyle" ]
+    then
+      doInstallEclipsePlugin "http://eclipse-cs.sf.net/update/" "net.sf.eclipsecs.feature.group"
+    elif [ "${1}" = "github" ]
+    then
+      doInstallEclipsePlugin "http://download.eclipse.org/egit/github/updates/" "org.eclipse.mylyn.github.feature.feature.group"
+    elif [ "${1}" = "soapui" ]
+    then
+      doInstallEclipsePlugin "http://www.soapui.org/eclipse/update/site.xml" "com.eviware.soapui.soapui_feature.feature.group"
+    else
+      echo "Undefined plugin ID ${1} - not known or supported."
+      echo "Provide full groupId together with URL of update-site."
+    fi
+  else
+    doInstallEclipsePlugin "${1}" "${2}"
+  fi
+}
+
+function doStartEclipse() {
+  doConfigureEclipse -u
+  echo "launching Eclipse in workspace ${WORKSPACE} at ${WORKSPACE_PATH}"
+  if doIsWindows
+  then
+    # shellcheck disable=SC2086
+    start "eclipse" /B "${ECLIPSE_HOME}/eclipsec" -clean -data "${WORKSPACE_PATH}" -keyring ~/.eclipse/.keyring -vm "${JAVA_HOME}/bin/javaw" -showlocation "${WORKSPACE}" -vmargs ${ECLIPSE_VMARGS}
+  else
+    # shellcheck disable=SC2086
+    "${ECLIPSE_HOME}/eclipse" -clean -data "${WORKSPACE_PATH}" -keyring ~/.eclipse/.keyring -vm "${JAVA_HOME}/bin/java" -showlocation "${DEVON_IDE_HOME/*\//}/${WORKSPACE}" -vmargs ${ECLIPSE_VMARGS} &
+  fi
+}
+
+# CLI
+if [ "${1}" = "-h" ] || [ "${1}" = "help" ]
+then
+  echo "Manage Eclipse IDE and workspace."
+  echo
+  echo "Arguments:"
+  echo " --all                    if provided as first arg then to command will be invoked for each workspace"
+  echo " setup                    setup Eclipse (install or update)"
+  echo " add-plugin «id» [«url»]  install an additional plugin"
+  echo " run | start              launch Eclipse IDE (default if no argument is given)"
+  echo " ws-up[date]              update eclipse workspace"
+  echo " ws-re[verse]             reverse merge changes from workspace into settings"
+  echo " ws-reverse-add           reverse merge adding new properties"
+  echo " create-script            create eclipse-${WORKSPACE} script if not already exists"
+  exit
+fi
+ECLIPSE_HOME="${DEVON_IDE_HOME}/software/eclipse"
+if [ -z "${1}" ]
+then
+  doSetup
+  doStartEclipse
+fi
+if [ "${1}" = "--all" ]
+then
+  shift
+  doDevonCommandAllWorkspaces eclipse "${@}"
+fi
+while [ -n "${1}" ]
+do
+  if [ "${1}" = "run" ] || [ "${1}" = "start" ]
+  then
+    doSetup
+    doStartEclipse
+  elif [ "${1}" = "ws-up" ] || [ "${1}" = "ws-update" ]
+  then
+    doConfigureEclipse -u
+  elif [ "${1}" = "ws-re" ] || [ "${1}" = "ws-reverse" ]
+  then
+    doConfigureEclipse -i
+  elif [ "${1}" = "ws-reverse-add" ]
+  then
+    doConfigureEclipse -x
+  elif [ "${1}" = "setup" ]
+  then
+    doSetup setup
+    doCreateIdeScript eclipse
+  elif [ "${1}" = "create-script" ]
+  then
+    doCreateIdeScript eclipse
+  elif [ "${1}" = "add-plugin" ]
+  then
+    shift
+    doAddPlugin "${@}"
+    exit ${?}
+  else
+    doFail "Unknown argument: ${1}"
+  fi
+  shift
+done

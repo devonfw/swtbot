@@ -1,0 +1,268 @@
+#!/usr/bin/env bash
+# shellcheck source=scripts/functions
+source "$(dirname "${0}")"/../functions
+
+# $1: optional setup
+function doSetup() {
+  doDevonCommand java -q setup
+  if [ -n "${1}" ] || [ ! -d "${MAVEN_HOME}" ]
+  then
+    local software_version=${MAVEN_VERSION:-3.6.2}
+    local mirror="https://archive.apache.org/dist/maven/maven-3/"
+    local download_url="${mirror}/${software_version}/binaries/apache-maven-${software_version}-bin.tar.gz"
+    doInstall "${MAVEN_HOME}" "${download_url}" "maven" "${software_version}" "" "-"
+  fi
+  if [ -n "${1}" ]
+  then
+    if [ -d "${SETTINGS_PATH}" ]
+    then
+      M2_DIR="${DEVON_IDE_HOME}/conf/.m2"
+      if [ ! -e "${M2_DIR}" ]
+      then
+        mkdir -p "${M2_DIR}"
+      fi
+      if [ ! -e "${M2_DIR}/settings-security.xml" ]
+      then
+        MASTER_PASSWORD="$(head -c 20 /dev/random | base64)"
+        MASTER_PASSWORD="$("${MVN}" --encrypt-master-password "${MASTER_PASSWORD}")"
+        echo -e "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<settingsSecurity>\n  <master>${MASTER_PASSWORD}</master>\n</settingsSecurity>" > "${M2_DIR}/settings-security.xml"
+        echo "Successfully created ${M2_DIR}/settings-security.xml"
+        MASTER_PASSWORD=
+      fi
+    else
+      echo "WARNING: Settings are missing at ${SETTINGS_PATH}"
+      echo "Please run the following command to fix:"
+      echo "devon setup"
+    fi
+    doRunCommand "'${MVN}' -v" "verify installation of maven"
+  fi
+}
+
+# $@: optional maven arguments
+function doGetProjectVersion() {
+  doSetup
+  local maven_project_version
+  maven_project_version="$("${MVN}" org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)"
+  if [ "${maven_project_version}" = "dev-SNAPSHOT" ]
+  then
+    local cwd="${PWD}"
+    local poms
+    poms="$(find . -name "pom.xml")"
+    for pom in ${poms}
+    do
+      cd "$(dirname "${pom}")" || exit 255
+      maven_project_version="$("${MVN}" org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)"
+      if [ "${maven_project_version}" != "dev-SNAPSHOT" ]
+      then
+        break;
+      fi
+    done
+    cd "${cwd}" || exit 255
+  fi
+  if [[ ! "${maven_project_version}" =~ ^[-_.0-9a-zA-Z]+$ ]]
+  then
+    doFail "Cound not determine project version at ${PWD} - got version output:\n${maven_project_version}"
+  fi
+  echo "${maven_project_version}"
+}
+
+# $1: new version
+# $2: current version
+# $3: optional backup flag (cleanBackup, keepBackup, cleanKeepBackup)
+function doSetProjectVersion() {
+  local current_version="${2}"
+  if [ -z "${2}" ]
+  then
+    current_version="$(doGetProjectVersion)"
+  fi
+  if [ "${current_version}" = "${1}" ]
+  then
+    echo "Maven version is already set to ${1}. Nothing to change."
+    return
+  fi
+  if [ -e ".mvn/maven.config" ]
+  then
+    # https://maven.apache.org/maven-ci-friendly.html
+    local maven_config
+    maven_config="$(cat .mvn/maven.config)"
+    local current_revision="${2/-SNAPSHOT/}"
+    if [ "${maven_config/${current_revision}/}" = "${maven_config}" ]
+    then
+      doConfirmWarning "Your .mvn/maven.config does not contain the expected revision ${current_revision}:\n${maven_config}"
+    fi
+    local revision="${1/-SNAPSHOT/}"
+    local changelist=""
+    if [ "${revision}" != "${1}" ]
+    then
+      changelist="-SNAPSHOT"
+    fi
+    local updated_config
+    updated_config="$(echo "${maven_config}" | sed "s/-Drevision=[^ ]*/-Drevision=${revision}/" | sed "s/-Dchangelist=[^ ]*/-Dchangelist=${changelist}/")"
+    if [ "${updated_config}" != "${maven_config}" ]
+    then
+      echo "${updated_config}" > .mvn/maven.config
+      doEcho "updated .mvn/maven.config\nfrom: ${maven_config}\nto: ${updated_config}"
+      return
+    fi
+  fi
+  local module_list
+  module_list="$("${MVN}" -q exec:exec -Dexec.executable=pwd)"
+  if [ "${?}" = 0 ]
+  then
+    local cwd="${PWD}"
+    for folder in ${module_list}
+    do
+      cd "${folder}" || exit 255
+      doSetPomVersion "${@}"
+    done
+    cd "${cwd}" || exit 255
+  else
+    doFail "${module_list}"
+  fi
+}
+
+# $1: new version
+# $2: current version
+# $3: optional backup flag (cleanBackup, keepBackup, cleanKeepBackup)
+function doSetPomVersion() {
+  if [ -f pom.xml.bak ]
+  then
+    if [ "${3}" = "cleanBackup" ] || [ "${3}" = "cleanKeepBackup" ]
+    then
+      doEcho "Cleaning previous backup ${PWD}/pom.xml.bak"
+      rm pom.xml.bak
+    fi
+  fi
+  doSetup
+  local maven_project_version
+  # shellcheck disable=SC2016
+  maven_project_version="$("${MVN}" -q exec:exec -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive)"
+  if [ "${maven_project_version}" = "${1}" ] 
+  then
+    echo "No changes needed for ${PWD}/pom.xml"
+    return
+  fi
+  if [ ! -f pom.xml.bak ]
+  then
+    doEcho "Creating backup of ${PWD}/pom.xml"
+    cp pom.xml pom.xml.bak
+  fi
+  local pom_elements
+  pom_elements="$(grep "${2}" pom.xml.bak)"
+  if [ "${?}" != 0 ]
+  then
+    doFail "Version ${2} not found in POM ${PWD}/pom.xml"
+    exit 255
+  fi
+  if [[ "${pom_elements}" == *$'\n'* ]]
+  then
+    doConfirmWarning "Multiple matches of version in your pom.xml:\n${pom_elements}"
+  fi
+  sed "s/${2}/${1}/g" pom.xml.bak > pom.xml
+  if [ "${3}" != "keepBackup" ] && [ "${3}" != "cleanKeepBackup" ]
+  then
+    doEcho "Cleaning backup ${PWD}/pom.xml.bak"
+    rm pom.xml.bak
+  fi
+}
+
+# $1: quiet option (-q, --quiet, quiet) or anything else to echo
+function doCheckTopLevelProject() {
+  if [ ! -f pom.xml ]
+  then
+    doEcho "${1}" "Not in a maven project: ${PWD}"
+    exit 255
+  fi
+  local relative_path
+  if grep -q "<parent>" pom.xml
+  then
+    relative_path="$(grep -q "<relativePath" pom.xml)"
+    if [ "${?}" = 0 ]
+    then
+      if [[ "${relative_path}" == *"<relativePath/>"* ]]
+      then
+        relative_path=""
+      else
+        relative_path="$(echo "${relative_path}" | sed 's/.*\<relativePath>\(.*\)\<\/relativePath>/\1/')"
+      fi
+    else
+      relative_path="../pom.xml"
+    fi
+  fi
+  if [ -n "${relative_path}" ]
+  then
+    if [ -f "${relative_path}" ]
+    then
+      doEcho "${1}" "Parent with existing relativePath ${relative_path}"
+      doEcho "${1}" "You are inside a maven module."
+      exit 254
+    else
+      doEcho "${1}" "Parent with non-existing relativePath ${relative_path}"
+    fi
+  fi
+  doEcho "${1}" "You are inside a top-level maven project"
+}
+
+function doRunBuild() {
+  local maven_cmd="${MVN}"
+  if [ -x mvnw ]
+  then
+    maven_cmd="./mvnw"
+  else
+    doSetup
+  fi
+  doEcho "Running: ${maven_cmd} ${*}"
+  if doIsQuiet
+  then
+    "${maven_cmd}" -q "${@}"
+    exit ${?}
+  else
+    "${maven_cmd}" "${@}"
+    exit ${?}
+  fi
+}
+
+# CLI
+MAVEN_HOME="${DEVON_IDE_HOME}/software/maven"
+MVN="${MAVEN_HOME}/bin/mvn"
+if [ "${1}" = "-h" ] || [ "${1}" = "help" ]
+then
+  echo "Setup or run maven build tool."
+  echo
+  echo "Arguments:"
+  echo "                          run default build"
+  echo " setup                    setup maven (install, verify, configure)"
+  echo " get-version              get the current project version"
+  echo " set-version «nv» [«cv»]  set the current project version to new version «nv» (assuming current version is «cv»)"
+  echo " check-top-level-project  check if we are running on a top-level project or fail if in a module or no maven project at all"
+  echo " release                  start a clean deploy release build"
+  echo " «args»                   call maven with the specified arguments"
+  echo
+  echo "Options:"
+elif [ -z "${1}" ]
+then
+  # shellcheck disable=SC2086
+  doRunBuild ${MVN_BUILD_OPTS:-clean install}
+elif [ "${1}" = "setup" ]
+then
+  doSetup setup
+elif [ "${1}" = "get-version" ]
+then
+  doGetProjectVersion
+elif [ "${1}" = "set-version" ] && [ -n "${2}" ]
+then
+  shift
+  doSetProjectVersion "${@}"
+elif [ "${1}" = "check-top-level-project" ]
+then
+  shift
+  doCheckTopLevelProject "${@}"
+elif [ "${1}" = "release" ]
+then
+  GPG_TTY=$(tty)
+  export GPG_TTY
+  # shellcheck disable=SC2086
+  doRunBuild ${MVN_RELEASE_OPTS:-clean deploy -Dchangelist= -Pdeploy}
+else
+  doRunBuild "${@}"
+fi
