@@ -46,10 +46,10 @@ public class DevonIdeSetup {
   private static void extractDownloadedSetup() {
 
     System.out.println("Extraction Started......");
-    File sourceFile = new File("" + File.separator + "SWTBOT-repo" + File.separator + "download" + File.separator
+    File sourceFile = new File(File.separator + "SWTBOT-repo" + File.separator + "download" + File.separator
         + "devonfw-ide-scripts-3.2.2.tar.gz");
     File destDir = new File(
-        "" + File.separator + "SWTBOT-repo" + File.separator + "projects" + File.separator + "my-project");
+        File.separator + "SWTBOT-repo" + File.separator + "projects" + File.separator + "my-project");
     destDir.mkdirs();
     TarGZipUnArchiver unArchiver = new TarGZipUnArchiver();
     // Need to set/enable logging for the unArchiver to avoid null pointer
