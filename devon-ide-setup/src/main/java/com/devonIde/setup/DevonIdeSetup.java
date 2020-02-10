@@ -24,8 +24,9 @@ public class DevonIdeSetup {
   private static void downloadSetup() throws IOException {
 
     File currDir = new File(File.separator + "SWTBOT-repo" + File.separator + "download");
-    currDir.mkdirs();
     currDir.getParentFile().mkdirs();
+    currDir.mkdirs();
+
     String absPath = currDir.getAbsolutePath();
     System.out.println("Path -----" + absPath);
     URL url = new URL("http://de-mucevolve02/files/devonfw-ide/releases/devonfw-ide-scripts-3.2.2.tar.gz");
