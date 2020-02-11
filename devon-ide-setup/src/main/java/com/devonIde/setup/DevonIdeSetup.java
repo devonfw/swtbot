@@ -23,7 +23,7 @@ public class DevonIdeSetup {
 
   private static void downloadSetup() throws IOException {
 
-    File currDir = new File(File.separator + "SWTBOT-repo" + File.separator + "download");
+    File currDir = new File(File.separator + "SWTBOT-repo" + File.separator + "download").getAbsoluteFile();
     currDir.mkdirs();
 
     String absPath = currDir.getAbsolutePath();
@@ -33,7 +33,7 @@ public class DevonIdeSetup {
     BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
     System.out.println("File out put stream  start1");
     File f = new File(absPath + File.separator + "devonfw-ide-scripts-3.2.2.tar.gz");
-    f.createNewFile();
+    f.mkdir();
     System.out.println("file created");
     FileOutputStream out = new FileOutputStream(f.getAbsoluteFile());
     System.out.println("File out put stream  end");
