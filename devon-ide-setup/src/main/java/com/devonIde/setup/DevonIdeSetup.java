@@ -97,7 +97,7 @@ public class DevonIdeSetup {
 
   public static void main(String[] args) throws IOException, InterruptedException {
 
-    File baseFolder = new File(File.separator + "SWTBOT-repo");
+    File baseFolder = new File(Constants.USER_HOME + File.separator + "SWTBOT-repo");
     baseFolder.mkdir();
     downloadSetup();
     extractDownloadedSetup();
