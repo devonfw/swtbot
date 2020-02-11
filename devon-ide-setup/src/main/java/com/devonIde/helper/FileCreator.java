@@ -9,11 +9,11 @@ import java.io.IOException;
  *
  */
 public class FileCreator {
-  public final static String USER_DIR = System.getProperty("user.dir");
+  public final static String USER_HOME = System.getProperty("user.home");
 
   public static boolean createBatFile() throws IOException {
 
-    File file = new File(USER_DIR + File.separator + "SWTBOT-repo" + File.separator + "projects" + File.separator
+    File file = new File(USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "projects" + File.separator
         + "my-project" + File.separator + "setup-helper.bat");
     file.createNewFile();
     FileWriter fileWriter = new FileWriter(file);
@@ -29,7 +29,7 @@ public class FileCreator {
 
   public static boolean createBashFile() throws IOException {
 
-    File file = new File(USER_DIR + File.separator + "SWTBOT-repo" + File.separator + "projects" + File.separator
+    File file = new File(USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "projects" + File.separator
         + "my-project" + File.separator + "home-directory");
     file.createNewFile();
     FileWriter fileWriter = new FileWriter(file);
@@ -44,7 +44,7 @@ public class FileCreator {
 
   public static boolean createTextFfile() throws IOException {
 
-    File file = new File(USER_DIR + File.separator + "SWTBOT-repo" + File.separator + "projects" + File.separator
+    File file = new File(USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "projects" + File.separator
         + "my-project" + File.separator + "text.txt");
     file.createNewFile();
     System.out.println("Text file created...........");
@@ -54,7 +54,7 @@ public class FileCreator {
   public static boolean createDevon4jAppWithCommandLine() {
 
     System.out.println("createDevon4jAppWithCommandLine started...........");
-    File projectPath = new File(USER_DIR + File.separator + "SWTBOT-repo" + File.separator + "devon4jproject");
+    File projectPath = new File(USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "devon4jproject");
     projectPath.mkdir();
     try {
       Runtime.getRuntime().exec("cmd /c"
