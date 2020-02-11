@@ -39,9 +39,9 @@ public class DevonIdeSetup {
     URLConnection urlConnection = url.openConnection();
     BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
     System.out.println("File out put stream  start1");
-    File f = new File(absPath + File.separator + "devonfw-ide-scripts-3.2.2.tar.gz");
     System.out.println("file created");
-    FileOutputStream out = new FileOutputStream(f.getAbsoluteFile());
+    FileOutputStream out = new FileOutputStream(
+        new File(absPath + File.separator + "devonfw-ide-scripts-3.2.2.tar.gz"));
     System.out.println("File out put stream  end");
     int i = 0;
     byte[] bytesIn = new byte[3000000];
