@@ -28,6 +28,7 @@ public class DevonIdeSetup {
 
     String absPath = currDir.getAbsolutePath();
     System.out.println("Path -----" + absPath + "     " + currDir.getCanonicalPath());
+    System.out.println("user dir " + System.getProperty("user.dir"));
     URL url = new URL("http://de-mucevolve02/files/devonfw-ide/releases/devonfw-ide-scripts-3.2.2.tar.gz");
     URLConnection urlConnection = url.openConnection();
     BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
