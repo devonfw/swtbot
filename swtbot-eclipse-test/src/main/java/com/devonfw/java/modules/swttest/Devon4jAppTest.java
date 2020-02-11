@@ -28,7 +28,8 @@ public class Devon4jAppTest {
 
     bot = new SWTWorkbenchBot();
     // Project should be inside the Directory
-    File projectPath = new File("\\SWTBOT-repo\\devon4jproject");
+    File projectPath = new File(
+        System.getProperty("user.home") + File.separator + "SWTBOT-repo" + File.separator + "devon4jproject");
     path = projectPath.getAbsolutePath();
   }
 
