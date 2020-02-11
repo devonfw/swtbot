@@ -130,6 +130,7 @@ public class DevonIdeSetup {
         }
       }
     } else {
+      TimeUnit.MINUTES.sleep(5);
       System.out.println("Execution is fast for Linux ----\"Setup of devonfw-ide completed\"");
     }
   }
