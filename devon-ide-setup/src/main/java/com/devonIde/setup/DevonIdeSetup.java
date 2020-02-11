@@ -3,8 +3,8 @@ package com.devonIde.setup;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -31,16 +31,16 @@ public class DevonIdeSetup {
     URL url = new URL("http://de-mucevolve02/files/devonfw-ide/releases/devonfw-ide-scripts-3.2.2.tar.gz");
     URLConnection urlConnection = url.openConnection();
     BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
-    System.out.println("File out put stream  start");
-    // FileOutputStream out = new FileOutputStream(absPath + File.separator + "devonfw-ide-scripts-3.2.2.tar.gz");
-    // OutputStream out = Files.newOutputStream(Paths.get(absPath + File.separator +
-    // "devonfw-ide-scripts-3.2.2.tar.gz"));
-    FileWriter out = new FileWriter(absPath + File.separator + "devonfw-ide-scripts-3.2.2.tar.gz");
+    System.out.println("File out put stream  start1");
+    File f = new File(absPath + File.separator + "devonfw-ide-scripts-3.2.2.tar.gz");
+    f.createNewFile();
+    System.out.println("file created");
+    FileOutputStream out = new FileOutputStream(f.getAbsoluteFile());
     System.out.println("File out put stream  end");
     int i = 0;
     byte[] bytesIn = new byte[3000000];
     while ((i = in.read(bytesIn)) >= 0) {
-      out.write(i);// write(bytesIn, 0, i);
+      out.write(bytesIn, 0, i);
     }
     System.out.println("downloadSetup done");
     out.close();
