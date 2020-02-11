@@ -1,14 +1,11 @@
 package com.devonIde.setup;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.concurrent.TimeUnit;
 
 import org.codehaus.plexus.archiver.tar.TarGZipUnArchiver;
 import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
@@ -95,29 +92,20 @@ public class DevonIdeSetup {
     FileCreator.createBashFile();
     FileCreator.createTextFfile();
     FileCreator.createDevon4jAppWithCommandLine();
-    runSetup();
+    // runSetup();
 
-    File file = new File(USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "projects" + File.separator
-        + "my-project" + File.separator + "text.txt");
-    FileReader fr = new FileReader(file); // Creation of File Reader object
-    BufferedReader br;
-    String lineReader = "";
-    String searchLine = "";
-    System.out.println("Setup of devonfw-ide installing ...");
-    while (true) {
-      TimeUnit.MINUTES.sleep(1);
-      br = new BufferedReader(fr);// Creation of BufferedReader object
-      while ((lineReader = br.readLine()) != null) {
-        if ("Setup of devonfw-ide completed".equals(lineReader)) {
-          searchLine = lineReader;
-          System.out.println("Setup of devonfw-ide completed");
-          break;
-        }
-      }
-      if (searchLine.equals("Setup of devonfw-ide completed")) {
-        break;
-      }
-    }
+    /*
+     * File file = new File(USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "projects" + File.separator +
+     * "my-project" + File.separator + "text.txt"); FileReader fr = new FileReader(file); // Creation of File Reader
+     * object BufferedReader br; String lineReader = ""; String searchLine = "";
+     * System.out.println("Setup of devonfw-ide installing ...");
+     */
+    /*
+     * while (true) { TimeUnit.MINUTES.sleep(1); br = new BufferedReader(fr);// Creation of BufferedReader object while
+     * ((lineReader = br.readLine()) != null) { if ("Setup of devonfw-ide completed".equals(lineReader)) { searchLine =
+     * lineReader; System.out.println("Setup of devonfw-ide completed"); break; } } if
+     * (searchLine.equals("Setup of devonfw-ide completed")) { break; } }
+     */
   }
 
 }
