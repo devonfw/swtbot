@@ -8,7 +8,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import org.codehaus.plexus.archiver.tar.TarGZipUnArchiver;
@@ -26,23 +25,20 @@ public class DevonIdeSetup {
 
   private static void downloadSetup() throws IOException {
 
+    System.out.println("User Home " + System.getProperty("user.home"));
     File currDir = new File(USER_DIR + File.separator + "SWTBOT-repo" + File.separator + "download").getAbsoluteFile();
     currDir.mkdirs();
-    String currentRelativePath = Paths.get("").toAbsolutePath().getRoot().toString();
-    // String s = currentRelativePath.toAbsolutePath().getRoot();
-    System.out.println("Current relative path is: " + currentRelativePath);
 
     String absPath = currDir.getAbsolutePath();
     System.out.println("Path -----" + absPath + "     " + currDir.getCanonicalPath());
     System.out.println("user dir " + USER_DIR);
+
     URL url = new URL("http://de-mucevolve02/files/devonfw-ide/releases/devonfw-ide-scripts-3.2.2.tar.gz");
     URLConnection urlConnection = url.openConnection();
     BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
-    System.out.println("File out put stream  start1");
-    System.out.println("file created");
+
     FileOutputStream out = new FileOutputStream(
         new File(absPath + File.separator + "devonfw-ide-scripts-3.2.2.tar.gz"));
-    System.out.println("File out put stream  end");
     int i = 0;
     byte[] bytesIn = new byte[3000000];
     while ((i = in.read(bytesIn)) >= 0) {
@@ -59,6 +55,7 @@ public class DevonIdeSetup {
   private static void extractDownloadedSetup() {
 
     System.out.println("Extraction Started......");
+
     File sourceFile = new File(USER_DIR + File.separator + "SWTBOT-repo" + File.separator + "download" + File.separator
         + "devonfw-ide-scripts-3.2.2.tar.gz");
     File destDir = new File(
