@@ -94,7 +94,7 @@
 					<useUIHarness>true</useUIHarness>
 					<useUIThread>false</useUIThread>
 					<testRuntime>p2Installed</testRuntime>
-					<work>/SWTBOT-repo/projects/my-project/software/eclipse</work>
+					<work>${user.home}/SWTBOT-repo/projects/my-project/software/eclipse</work>
 					<profileName>epp.package.java</profileName>
 				</configuration>
 			</plugin>
