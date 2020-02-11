@@ -23,7 +23,9 @@ public class DevonIdeSetup {
 
   private static void downloadSetup() throws IOException {
 
-    File currDir = new File(File.separator + "SWTBOT-repo" + File.separator + "download").getAbsoluteFile();
+    File currDir = new File(
+        System.getProperty("user.dir") + File.separator + "SWTBOT-repo" + File.separator + "download")
+            .getAbsoluteFile();
     currDir.mkdirs();
 
     String absPath = currDir.getAbsolutePath();
