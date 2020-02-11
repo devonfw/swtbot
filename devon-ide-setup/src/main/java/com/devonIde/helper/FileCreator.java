@@ -75,6 +75,7 @@ public class FileCreator {
         Runtime.getRuntime().exec(
             "/bin/bash -c mvn -DarchetypeVersion=3.2.1 -DarchetypeGroupId=com.devonfw.java.templates -DarchetypeArtifactId=devon4j-template-server archetype:generate -DgroupId=com.company -DartifactId=devon4japp -Dversion=1.0.0-SNAPSHOT -Dpackage=com.test -DdbType=h2 -Dbatch=batch -DinteractiveMode=false:baseCommand",
             null, projectPath);
+        System.out.println("...........Enviroment is Linux...............");
       } catch (IOException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();

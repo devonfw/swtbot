@@ -76,11 +76,22 @@ public class DevonIdeSetup {
 
   private static void runSetup() throws IOException, InterruptedException {
 
-    ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/C", "Start", "setup-helper.bat");
     File dir = new File(new File(Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "projects"
         + File.separator + "my-project").getAbsolutePath());
-    pb.directory(dir);
-    pb.start();
+    if (Constants.OS_NAME.startsWith(Constants.WINDOWS)) {
+      ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/C", "Start", "setup-helper.bat");
+      pb.directory(dir);
+      pb.start();
+    } else if (Constants.OS_NAME.startsWith(Constants.LINUX)) {
+
+      try {
+        Runtime.getRuntime().exec("/bin/bash -c setup-helper.bat", null, dir);
+        System.out.println("setup-helper.bat run Enviroment is Linux...............");
+      } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
 
   }
 
