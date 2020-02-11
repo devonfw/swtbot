@@ -4,12 +4,10 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import org.codehaus.plexus.archiver.tar.TarGZipUnArchiver;
@@ -35,12 +33,14 @@ public class DevonIdeSetup {
     BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
     System.out.println("File out put stream  start");
     // FileOutputStream out = new FileOutputStream(absPath + File.separator + "devonfw-ide-scripts-3.2.2.tar.gz");
-    OutputStream out = Files.newOutputStream(Paths.get(absPath + File.separator + "devonfw-ide-scripts-3.2.2.tar.gz"));
+    // OutputStream out = Files.newOutputStream(Paths.get(absPath + File.separator +
+    // "devonfw-ide-scripts-3.2.2.tar.gz"));
+    FileWriter out = new FileWriter(absPath + File.separator + "devonfw-ide-scripts-3.2.2.tar.gz");
     System.out.println("File out put stream  end");
     int i = 0;
     byte[] bytesIn = new byte[3000000];
     while ((i = in.read(bytesIn)) >= 0) {
-      out.write(bytesIn, 0, i);
+      out.write(i);// write(bytesIn, 0, i);
     }
     System.out.println("downloadSetup done");
     out.close();
