@@ -27,13 +27,13 @@ public class DevonIdeSetup {
     currDir.mkdirs();
 
     String absPath = currDir.getAbsolutePath();
-    System.out.println("Path -----" + absPath);
+    System.out.println("Path -----" + absPath + "     " + currDir.getCanonicalPath());
     URL url = new URL("http://de-mucevolve02/files/devonfw-ide/releases/devonfw-ide-scripts-3.2.2.tar.gz");
     URLConnection urlConnection = url.openConnection();
     BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
     System.out.println("File out put stream  start1");
     File f = new File(absPath + File.separator + "devonfw-ide-scripts-3.2.2.tar.gz");
-    f.mkdir();
+    f.createNewFile();
     System.out.println("file created");
     FileOutputStream out = new FileOutputStream(f.getAbsoluteFile());
     System.out.println("File out put stream  end");
