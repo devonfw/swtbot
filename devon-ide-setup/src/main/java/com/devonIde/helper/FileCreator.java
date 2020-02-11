@@ -3,13 +3,14 @@ package com.devonIde.helper;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 /**
  * Object of this class "BatchFileCreator" is to create helper setup bat file and write its contents
  *
  */
 public class FileCreator {
-  public final static String USER_DIR = System.getProperty("user.dir");
+  public final static String USER_DIR = Paths.get("").toAbsolutePath().getRoot().toString();
 
   public static boolean createBatFile() throws IOException {
 

@@ -8,7 +8,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
@@ -23,15 +22,15 @@ import com.devonIde.helper.FileCreator;
  */
 public class DevonIdeSetup {
 
-  public final static String USER_DIR = System.getProperty("user.dir");
+  public final static String USER_DIR = Paths.get("").toAbsolutePath().getRoot().toString();
 
   private static void downloadSetup() throws IOException {
 
     File currDir = new File(USER_DIR + File.separator + "SWTBOT-repo" + File.separator + "download").getAbsoluteFile();
     currDir.mkdirs();
-    Path currentRelativePath = Paths.get("");
+    String currentRelativePath = Paths.get("").toAbsolutePath().getRoot().toString();
     // String s = currentRelativePath.toAbsolutePath().getRoot();
-    System.out.println("Current relative path is: " + currentRelativePath.toAbsolutePath().getRoot().toString());
+    System.out.println("Current relative path is: " + currentRelativePath);
 
     String absPath = currDir.getAbsolutePath();
     System.out.println("Path -----" + absPath + "     " + currDir.getCanonicalPath());
