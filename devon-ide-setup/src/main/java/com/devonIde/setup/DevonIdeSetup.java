@@ -114,7 +114,7 @@ public class DevonIdeSetup {
     String lineReader = "";
     String searchLine = "";
     System.out.println("Setup of devonfw-ide installing ...");
-
+    /* if (Constants.OS_NAME.startsWith(Constants.WINDOWS)) { */
     while (true) {
       TimeUnit.MINUTES.sleep(1);
       br = new BufferedReader(fr);// Creation of BufferedReader object
@@ -125,11 +125,15 @@ public class DevonIdeSetup {
           break;
         }
       }
+      System.out.println("String 'Setup of devonfw-ide completed' not found ,finding it again in text file");
       if (searchLine.equals("Setup of devonfw-ide completed")) {
         break;
       }
-
-    }
+      /* } */
+    } /*
+       * else { TimeUnit.MINUTES.sleep(10);
+       * System.out.println("Execution is fast for Linux ----\"Setup of devonfw-ide completed\""); }
+       */
   }
 
 }
