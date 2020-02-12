@@ -124,8 +124,10 @@ public class DevonIdeSetup {
           System.out.println("Setup of devonfw-ide completed");
           break;
         }
+        System.out.println("String 'Setup of devonfw-ide completed' not found ,finding it again in text file");
+        System.out.println("Text file line - " + lineReader);
       }
-      System.out.println("String 'Setup of devonfw-ide completed' not found ,finding it again in text file");
+
       if (searchLine.equals("Setup of devonfw-ide completed")) {
         break;
       }
