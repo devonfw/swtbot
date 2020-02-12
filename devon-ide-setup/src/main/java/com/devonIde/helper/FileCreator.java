@@ -15,7 +15,7 @@ public class FileCreator {
   public static boolean createBatFile() throws IOException {
 
     File file = new File(Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "projects"
-        + File.separator + "my-project" + File.separator + "setup-helper.bat");
+        + File.separator + "my-project" + File.separator + "setup-helper");
     file.createNewFile();
     FileWriter fileWriter = new FileWriter(file);
     fileWriter.write("@echo off\r\n" + "\r\n"
