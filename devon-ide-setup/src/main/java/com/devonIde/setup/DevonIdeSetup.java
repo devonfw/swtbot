@@ -102,6 +102,7 @@ public class DevonIdeSetup {
     downloadSetup();
     extractDownloadedSetup();
     FileCreator.createBatFile();
+    FileCreator.createSetupHelperForLinux();
     FileCreator.createBashFile();
     FileCreator.createTextFfile();
     FileCreator.createDevon4jAppWithCommandLine();

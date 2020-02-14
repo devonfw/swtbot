@@ -15,7 +15,7 @@ public class FileCreator {
   public static boolean createBatFile() throws IOException {
 
     File file = new File(Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "projects"
-        + File.separator + "my-project" + File.separator + "setup-helper.sh");
+        + File.separator + "my-project" + File.separator + "setup-helper.bat");
     file.createNewFile();
     FileWriter fileWriter = new FileWriter(file);
     fileWriter.write("@echo off\r\n" + "\r\n"
@@ -26,6 +26,21 @@ public class FileCreator {
     fileWriter.flush();
     fileWriter.close();
     return true;
+  }
+
+  public static boolean createSetupHelperForLinux() throws IOException {
+
+    File file = new File(Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "projects"
+        + File.separator + "my-project" + File.separator + "setup-helper.sh");
+    file.createNewFile();
+    FileWriter fileWriter = new FileWriter(file);
+    fileWriter.write("#!/bin/bash\r\n" + "set SETTINGS_URL=-\r\n" + "export SETTINGS_URL\r\n"
+        + "\"/bin/bash\" -c \"./setup\" > text.txt");
+    System.out.println("Bat file created...........");
+    fileWriter.flush();
+    fileWriter.close();
+    return true;
+
   }
 
   public static boolean createBashFile() throws IOException {
@@ -70,12 +85,14 @@ public class FileCreator {
         e.printStackTrace();
       }
     } else if (Constants.OS_NAME.startsWith(Constants.LINUX)) {
-
+      ProcessBuilder processBuilder = new ProcessBuilder();
+      processBuilder.command("/bin/bash", "-c",
+          "mvn -DarchetypeVersion=3.2.1 -DarchetypeGroupId=com.devonfw.java.templates -DarchetypeArtifactId=devon4j-template-server archetype:generate -DgroupId=com.company -DartifactId=devon4japp -Dversion=1.0.0-SNAPSHOT -Dpackage=com.test -DdbType=h2 -Dbatch=batch -DinteractiveMode=false:baseCommand");
+      processBuilder.directory(
+          new File(Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "devon4jproject"));
       try {
-        Runtime.getRuntime().exec(
-            "/bin/bash -c mvn -DarchetypeVersion=3.2.1 -DarchetypeGroupId=com.devonfw.java.templates -DarchetypeArtifactId=devon4j-template-server archetype:generate -DgroupId=com.company -DartifactId=devon4japp -Dversion=1.0.0-SNAPSHOT -Dpackage=com.test -DdbType=h2 -Dbatch=batch -DinteractiveMode=false:baseCommand",
-            null, projectPath);
-        System.out.println("...........Enviroment is Linux...............");
+        processBuilder.start();
+
       } catch (IOException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
