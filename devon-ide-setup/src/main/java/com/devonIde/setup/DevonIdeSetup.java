@@ -85,10 +85,14 @@ public class DevonIdeSetup {
     } else if (Constants.OS_NAME.startsWith(Constants.LINUX)) {
 
       try {
-        Runtime.getRuntime().exec("/bin/bash -c ./setup-helper.sh", null, dir);
-        System.out.println("setup-helper.sh run Enviroment is Linux...............");
+
+        ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", ". setup-helper.sh");
+        pb.directory(dir);
+        pb.start();
+
+        System.out.println("setup-helper run Enviroment is Linux...............");
       } catch (IOException e) {
-        // TODO Auto-generated catch block
+
         e.printStackTrace();
       }
     }
