@@ -34,7 +34,7 @@ public class FileCreator {
         + File.separator + "my-project" + File.separator + "setup-helper.sh");
     file.createNewFile();
     FileWriter fileWriter = new FileWriter(file);
-    fileWriter.write("#!/bin/bash\r\n" + "set SETTINGS_URL=-\r\n" + "export SETTINGS_URL\r\n"
+    fileWriter.write("#!/bin/bash\r\n" + "" + "export SETTINGS_URL=https://github.com/devonfw/ide-settings.git\r\n"
         + "\"/bin/bash\" -c \"./setup\" > text.txt");
     System.out.println("Bat file created...........");
     fileWriter.flush();
