@@ -60,7 +60,7 @@ public class FileCreator {
     fileWriter.write("#!/bin/bash" + System.lineSeparator() + "DEVON_HOME_DIR=~" + System.lineSeparator()
         + "echo home directory \"${DEVON_HOME_DIR}\"" + System.lineSeparator() + "mkdir -p ~/.devon"
         + System.lineSeparator()
-        + "echo -e \"On $(date +\"%Y-%m-%d\") at $(date +\"%H:%M:%S\") you accepted the devonfw-ide terms of use.\\nhttps://github.com/devonfw/ide/blob/master/TERMS_OF_USE.asciidoc\" > ~/.devon/.license.agreement");
+        + "echo -e \"On $(date +\"%Y-%m-%d\") at $(date +\"%H:%M:%S\") you accepted the devonfw-ide terms of use.\\nhttps://github.com/devonfw/ide/blob/master/TERMS_OF_USE.asciidoc\" > ${DEVON_HOME_DIR}/.devon/.license.agreement");
     System.out.println("Bash file created...........");
     fileWriter.flush();
     fileWriter.close();
