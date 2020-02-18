@@ -40,7 +40,7 @@ public class FileCreator {
         + File.separator + "my-project" + File.separator + "setuphelper");
     file.createNewFile();
     FileWriter fileWriter = new FileWriter(file);
-    fileWriter.write("#!/bin/bash" + System.lineSeparator() + "./lincenseagreement" + System.lineSeparator()
+    fileWriter.write("#!/bin/bash" + System.lineSeparator() + ". lincenseagreement" + System.lineSeparator()
         + "export SETTINGS_URL=\"https://github.com/devonfw/ide-settings.git\"" + System.lineSeparator()
         + "echo url is $SETTINGS_URL" + System.lineSeparator() + "\"/bin/bash\" -c \"./setup\" > text.txt");
     System.out.println("Bat file created...........");
