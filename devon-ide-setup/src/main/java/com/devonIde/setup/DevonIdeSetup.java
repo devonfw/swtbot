@@ -86,7 +86,7 @@ public class DevonIdeSetup {
 
       try {
 
-        ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", ". setup-helper.sh");
+        ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", ". setuphelper");
         pb.directory(dir);
         pb.start();
 
@@ -105,10 +105,10 @@ public class DevonIdeSetup {
     baseFolder.mkdir();
     downloadSetup();
     extractDownloadedSetup();
-    FileCreator.createBatFile();
+    FileCreator.createSetupHelperForWindow();
     FileCreator.createSetupHelperForLinux();
-    FileCreator.createBashFile();
-    FileCreator.createTextFfile();
+    FileCreator.createLincenseAgreement();
+    FileCreator.createTextFile();
     FileCreator.createDevon4jAppWithCommandLine();
     runSetup();
 
