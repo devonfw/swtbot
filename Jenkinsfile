@@ -9,7 +9,7 @@ pipeline {
     }
 	 post {
         always {
-            cleanWs(patterns: [[pattern: '/home/pl/SWTBOT-repo/', type: 'INCLUDE']])
+            deleteDir()
         }
     }
 }
