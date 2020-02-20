@@ -9,7 +9,7 @@ pipeline {
     }
 	 post {
         always {
-            cleanWs externalDelete: '/home/pl/SWTBOT-repo/'
+            cleanWs(patterns: [[pattern: '/home/pl/SWTBOT-repo/', type: 'INCLUDE']])
         }
     }
 }
