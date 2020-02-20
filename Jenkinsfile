@@ -9,7 +9,7 @@ pipeline {
     }
 	 post {
         always {
-            deleteDir()
+            cleanWs externalDelete: '/home/pl/SWTBOT-repo/'
         }
     }
 }
