@@ -7,13 +7,9 @@ import java.io.IOException;
 import com.devonIde.constants.Constants;
 
 /**
- *
  * Object of this class "BatchFileCreator" is to create helper setup bat file and write its contents
  *
- *
- *
  */
-
 public class FileCreator {
 
   public static boolean createSetupHelperForWindow() throws IOException {
@@ -29,9 +25,7 @@ public class FileCreator {
     System.out.println("Bat file created...........");
     fileWriter.flush();
     fileWriter.close();
-
     return true;
-
   }
 
   public static boolean createSetupHelperForLinux() throws IOException {
@@ -46,7 +40,6 @@ public class FileCreator {
     System.out.println("Bat file created...........");
     fileWriter.flush();
     fileWriter.close();
-
     return true;
 
   }
@@ -60,13 +53,11 @@ public class FileCreator {
     fileWriter.write("#!/bin/bash" + System.lineSeparator() + "DEVON_HOME_DIR=~" + System.lineSeparator()
         + "echo home directory \"${DEVON_HOME_DIR}\"" + System.lineSeparator() + "mkdir -p ~/.devon"
         + System.lineSeparator()
-        + "echo -e \"On $(date +\"%Y-%m-%d\") at $(date +\"%H:%M:%S\") you accepted the devonfw-ide terms of use.\\nhttps://github.com/devonfw/ide/blob/master/TERMS_OF_USE.asciidoc\" > ${DEVON_HOME_DIR}/.devon/.license.agreement");
+        + "echo -e \"On $(date +\"%Y-%m-%d\") at $(date +\"%H:%M:%S\") you accepted the devonfw-ide terms of use.\\nhttps://github.com/devonfw/ide/blob/master/TERMS_OF_USE.asciidoc\" > ~/.devon/.license.agreement");
     System.out.println("Bash file created...........");
     fileWriter.flush();
     fileWriter.close();
-
     return true;
-
   }
 
   public static boolean createTextFile() throws IOException {
@@ -77,27 +68,25 @@ public class FileCreator {
     System.out.println("Text file created...........");
 
     return true;
-
   }
 
   public static boolean createDevon4jAppWithCommandLine() {
 
     System.out.println("createDevon4jAppWithCommandLine started...........");
+
     File projectPath = new File(
         Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "devon4jproject");
     projectPath.mkdir();
+
     if (Constants.OS_NAME.startsWith(Constants.WINDOWS)) {
       try {
         Runtime.getRuntime().exec("cmd /c"
             + "devon mvn -DarchetypeVersion=3.2.1 -DarchetypeGroupId=com.devonfw.java.templates -DarchetypeArtifactId=devon4j-template-server archetype:generate -DgroupId=com.company -DartifactId=devon4japp -Dversion=1.0.0-SNAPSHOT -Dpackage=com.test -DdbType=h2 -Dbatch=batch -DinteractiveMode=false:baseCommand",
             null, projectPath);
-
       } catch (IOException e) {
 
         e.printStackTrace();
-
       }
-
     } else if (Constants.OS_NAME.startsWith(Constants.LINUX)) {
       ProcessBuilder processBuilder = new ProcessBuilder();
       processBuilder.command("/bin/bash", "-c",
@@ -106,18 +95,17 @@ public class FileCreator {
           new File(Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "devon4jproject"));
       try {
         processBuilder.start();
+
       } catch (IOException e) {
-
         // TODO Auto-generated catch block
-
         e.printStackTrace();
       }
+
     } else {
+
       System.out.println(".............Operating system is not supported.............");
     }
 
     return true;
-
   }
-
 }

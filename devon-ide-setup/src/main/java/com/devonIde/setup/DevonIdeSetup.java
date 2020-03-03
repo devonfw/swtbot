@@ -103,7 +103,7 @@ public class DevonIdeSetup {
 
     File baseFolder = new File(Constants.USER_HOME + File.separator + "SWTBOT-repo");
     baseFolder.mkdir();
-    downloadSetup();
+    // downloadSetup();
     extractDownloadedSetup();
     FileCreator.createSetupHelperForWindow();
     FileCreator.createSetupHelperForLinux();
@@ -155,6 +155,7 @@ public class DevonIdeSetup {
         }
       }
     }
+
   }
 
 }
