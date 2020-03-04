@@ -6,5 +6,5 @@ package com.devonfw.java.modules.swttest.constants;
  */
 public class Constants {
 
-  public final static String BASE_FOLDER = "SWTBOT-repo2";
+  public final static String BASE_FOLDER = "SWTBOT-repo3";
 }
