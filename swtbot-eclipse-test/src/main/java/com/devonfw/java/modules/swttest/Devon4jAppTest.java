@@ -9,6 +9,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.devonfw.java.modules.swttest.constants.Constants;
+
 /**
  * General Eclipse Plug-in Tests
  */
@@ -29,7 +31,7 @@ public class Devon4jAppTest {
     bot = new SWTWorkbenchBot();
     // Project should be inside the Directory
     File projectPath = new File(
-        System.getProperty("user.home") + File.separator + "SWTBOT-repo" + File.separator + "devon4jproject");
+        System.getProperty("user.home") + File.separator + Constants.BASE_FOLDER + File.separator + "devon4jproject");
     path = projectPath.getAbsolutePath();
   }
 

@@ -18,7 +18,7 @@ public class test {
    */
   public static void main(String[] args) {
 
-    File dir = new File(new File(Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "projects"
+    File dir = new File(new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator + "projects"
         + File.separator + "my-project").getAbsolutePath());
 
     try {

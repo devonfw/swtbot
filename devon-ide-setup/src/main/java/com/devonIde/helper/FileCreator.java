@@ -14,7 +14,7 @@ public class FileCreator {
 
   public static boolean createSetupHelperForWindow() throws IOException {
 
-    File file = new File(Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "projects"
+    File file = new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator + "projects"
         + File.separator + "my-project" + File.separator + "setup-helper.bat");
     file.createNewFile();
     FileWriter fileWriter = new FileWriter(file);
@@ -30,7 +30,7 @@ public class FileCreator {
 
   public static boolean createSetupHelperForLinux() throws IOException {
 
-    File file = new File(Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "projects"
+    File file = new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator + "projects"
         + File.separator + "my-project" + File.separator + "setuphelper");
     file.createNewFile();
     FileWriter fileWriter = new FileWriter(file);
@@ -46,7 +46,7 @@ public class FileCreator {
 
   public static boolean createLincenseAgreement() throws IOException {
 
-    File file = new File(Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "projects"
+    File file = new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator + "projects"
         + File.separator + "my-project" + File.separator + "lincenseagreement");
     file.createNewFile();
     FileWriter fileWriter = new FileWriter(file);
@@ -62,7 +62,7 @@ public class FileCreator {
 
   public static boolean createTextFile() throws IOException {
 
-    File file = new File(Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "projects"
+    File file = new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator + "projects"
         + File.separator + "my-project" + File.separator + "text.txt");
     file.createNewFile();
     System.out.println("Text file created...........");
@@ -75,7 +75,7 @@ public class FileCreator {
     System.out.println("createDevon4jAppWithCommandLine started...........");
 
     File projectPath = new File(
-        Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "devon4jproject");
+        Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator + "devon4jproject");
     projectPath.mkdir();
 
     if (Constants.OS_NAME.startsWith(Constants.WINDOWS)) {
@@ -92,7 +92,7 @@ public class FileCreator {
       processBuilder.command("/bin/bash", "-c",
           "mvn -DarchetypeVersion=3.2.1 -DarchetypeGroupId=com.devonfw.java.templates -DarchetypeArtifactId=devon4j-template-server archetype:generate -DgroupId=com.company -DartifactId=devon4japp -Dversion=1.0.0-SNAPSHOT -Dpackage=com.test -DdbType=h2 -Dbatch=batch -DinteractiveMode=false:baseCommand");
       processBuilder.directory(
-          new File(Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "devon4jproject"));
+          new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator + "devon4jproject"));
       try {
         processBuilder.start();
 

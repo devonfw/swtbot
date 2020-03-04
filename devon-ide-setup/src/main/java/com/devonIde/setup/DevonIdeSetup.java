@@ -25,7 +25,7 @@ public class DevonIdeSetup {
   private static void downloadSetup() throws IOException {
 
     System.out.println("User Home " + System.getProperty("user.home"));
-    File currDir = new File(Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "download")
+    File currDir = new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator + "download")
         .getAbsoluteFile();
     currDir.mkdirs();
 
@@ -56,9 +56,9 @@ public class DevonIdeSetup {
 
     System.out.println("Extraction Started......");
 
-    File sourceFile = new File(Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "download"
+    File sourceFile = new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator + "download"
         + File.separator + "devonfw-ide-scripts-3.2.2.tar.gz");
-    File destDir = new File(Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "projects"
+    File destDir = new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator + "projects"
         + File.separator + "my-project");
     destDir.mkdirs();
     TarGZipUnArchiver unArchiver = new TarGZipUnArchiver();
@@ -76,7 +76,7 @@ public class DevonIdeSetup {
 
   private static void runSetup() throws IOException, InterruptedException {
 
-    File dir = new File(new File(Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "projects"
+    File dir = new File(new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator + "projects"
         + File.separator + "my-project").getAbsolutePath());
     if (Constants.OS_NAME.startsWith(Constants.WINDOWS)) {
       ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/C", "Start", "setup-helper.bat");
@@ -101,9 +101,9 @@ public class DevonIdeSetup {
 
   public static void main(String[] args) throws IOException, InterruptedException {
 
-    File baseFolder = new File(Constants.USER_HOME + File.separator + "SWTBOT-repo");
+    File baseFolder = new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER);
     baseFolder.mkdir();
-    // downloadSetup();
+    downloadSetup();
     extractDownloadedSetup();
     FileCreator.createSetupHelperForWindow();
     FileCreator.createSetupHelperForLinux();
@@ -112,7 +112,7 @@ public class DevonIdeSetup {
     FileCreator.createDevon4jAppWithCommandLine();
     runSetup();
 
-    File file = new File(Constants.USER_HOME + File.separator + "SWTBOT-repo" + File.separator + "projects"
+    File file = new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator + "projects"
         + File.separator + "my-project" + File.separator + "text.txt");
     FileReader fr = new FileReader(file); // Creation of File Reader object
     BufferedReader br;
