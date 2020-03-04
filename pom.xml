@@ -53,7 +53,7 @@
 				<artifactId>tycho-compiler-plugin</artifactId>
 				<version>${tycho.version}</version>
 				<configuration>
-					<useProjectSettings>false</useProjectSettings>
+					<useProjectSettings>true</useProjectSettings>
 					<compilerArguments>
 						<encoding>${project.build.sourceEncoding}</encoding>
 					</compilerArguments>
