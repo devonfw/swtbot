@@ -22,18 +22,11 @@
 		<module>swtbot-eclipse-test</module>
 	</modules>
 	<dependencies>
-		<dependency>
-			<groupId>org.apache.maven.plugins</groupId>
-			<artifactId>maven-compiler-plugin</artifactId>
-			<version>3.7.0</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.eclipse.swt.gtk.linux/x86_64 -->
-		<dependency>
-			<groupId>org.eclipse.swt.gtk.linux</groupId>
-			<artifactId>x86_64</artifactId>
-			<version>3.3.0-v3346</version>
-		</dependency>
-
+<dependency>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.7.0</version>
+</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -51,29 +44,29 @@
 				<extensions>true</extensions>
 			</plugin>
 			<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-p2-plugin</artifactId>
-				<version>${tycho.version}</version>
-				<configuration>
-					<baselineMode>warn</baselineMode>
-					<baselineReplace>none</baselineReplace>
-				</configuration>
-				<executions>
-					<execution>
-						<id>default-p2-metadata-default</id>
-						<configuration>
-							<attachP2Metadata>false</attachP2Metadata>
-						</configuration>
-					</execution>
-					<execution>
-						<id>p2-metadata</id>
-						<phase>package</phase>
-						<goals>
-							<goal>p2-metadata</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-p2-plugin</artifactId>
+        <version>${tycho.version}</version>
+        <configuration>
+          <baselineMode>warn</baselineMode>
+          <baselineReplace>none</baselineReplace>
+        </configuration>
+        <executions>
+          <execution>
+            <id>default-p2-metadata-default</id>
+            <configuration>
+              <attachP2Metadata>false</attachP2Metadata>
+            </configuration>
+          </execution>
+          <execution>
+            <id>p2-metadata</id>
+            <phase>package</phase>
+            <goals>
+              <goal>p2-metadata</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-compiler-plugin</artifactId>
