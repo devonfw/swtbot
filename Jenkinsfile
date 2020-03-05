@@ -3,7 +3,7 @@ pipeline {
     stages { 
         stage('Build') { 
             steps { 
-			sh 'export SWT_GTK3=0'
+			sh './eclipse -noSplash --launcher.GTK_Check=0'
                sh 'mvn install' 
             }
         }
