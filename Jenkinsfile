@@ -1,3 +1,6 @@
+def xvfb = tool name: 'default', type: 'org.jenkinsci.plugins.xvfb.XvfbInstallation'
+
+env.PATH="${xvfb}/bin:${env.PATH}"
 pipeline { 
     agent any  
    
