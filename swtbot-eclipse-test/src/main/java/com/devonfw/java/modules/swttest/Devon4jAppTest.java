@@ -49,22 +49,21 @@ public class Devon4jAppTest {
     bot.button("Refresh").click();
     bot.button("Finish").click();
     bot.toolbarButtonWithTooltip("&Restore").click();
-    bot.waitUntil(new AllJobsAreFinished(), 1000000);
+    bot.waitUntil(new AllJobsAreFinished(), 10000);
 
     runProjectTestCases();
 
   }
 
   private void runProjectTestCases() {
-
-    bot.sleep(1000000000);
+	  
     bot.tree().getTreeItem("devon4japp-core").select();
     bot.tree().getTreeItem("devon4japp-core").expand();
 
     bot.tree().getTreeItem("devon4japp-core").getNode("src/test/java").expand();
     bot.tree().getTreeItem("devon4japp-core").getNode("src/test/java").getNode("com.test.general.service.impl.rest")
         .expand();
-    bot.waitUntil(new AllJobsAreFinished(), 100000);
+    bot.waitUntil(new AllJobsAreFinished(), 10000);
     bot.tree().getTreeItem("devon4japp-core").getNode("src/test/java").getNode("com.test.general.service.impl.rest")
         .getNode("SecurityRestServiceImplTest.java").select().contextMenu("Run As").menu("1 JUnit Test").click();
     bot.waitUntil(new AllJobsAreFinished(), 10000);
