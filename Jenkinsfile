@@ -6,18 +6,16 @@ pipeline {
                 steps { 
                  script {
 
-                 def xvfb = tool name: 'default', type: 'org.jenkinsci.plugins.xvfb.XvfbInstallation'
-
- 
-
-               env.PATH="${xvfb}/bin:${env.PATH}"
+                  tool name: 'default', type: 'org.jenkinsci.plugins.xvfb.XvfbInstallation'
 
                wrap([$class: 'Xvfb', additionalOptions: '', assignedLabels: '', debug: true, installationName: 'default']) {
-                    sh 'mvn install'
+                    timeout(30) {
+                 sh 'mvn install'
                 }
-}
+                 }
                     }               
             }
         
       }
+    }
     }
