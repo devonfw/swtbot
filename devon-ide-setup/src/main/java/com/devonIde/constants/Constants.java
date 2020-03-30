@@ -16,6 +16,6 @@ public class Constants {
 
   public final static String LINUX = "lin";
 
-  public final static String BASE_FOLDER = "SWTBOT-repo4";
+  public final static String BASE_FOLDER = "swtbot-basefolder";
 
 }

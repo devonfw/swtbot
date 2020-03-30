@@ -22,7 +22,6 @@ public class FileCreator {
         + "for /F \"usebackq tokens=2*\" %%O in (`call \"%SystemRoot%\"\\system32\\reg.exe query \"HKLM\\Software\\GitForWindows\" /v \"InstallPath\" 2^>nul ^| \"%SystemRoot%\\system32\\findstr.exe\" REG_SZ`) do set GIT_HOME=%%P\r\n"
         + "set \"BASH=%GIT_HOME%\\bin\\bash.exe\"\r\n" + "\"%BASH%\" -c 'source ./lincenseagreement'\r\n"
         + "set \"SETTINGS_URL=-\"\r\n" + "call setup.bat > text.txt");
-    System.out.println("Bat file created...........");
     fileWriter.flush();
     fileWriter.close();
     return true;
@@ -37,7 +36,6 @@ public class FileCreator {
     fileWriter.write("#!/bin/bash" + System.lineSeparator() + ". lincenseagreement" + System.lineSeparator()
         + "export SETTINGS_URL=\"https://github.com/devonfw/ide-settings.git\"" + System.lineSeparator()
         + "echo url is $SETTINGS_URL" + System.lineSeparator() + "\"/bin/bash\" -c \"./setup\" > text.txt");
-    System.out.println("Bat file created...........");
     fileWriter.flush();
     fileWriter.close();
     return true;
@@ -54,7 +52,6 @@ public class FileCreator {
         + "echo home directory \"${DEVON_HOME_DIR}\"" + System.lineSeparator() + "mkdir -p ~/.devon"
         + System.lineSeparator()
         + "echo -e \"On $(date +\"%Y-%m-%d\") at $(date +\"%H:%M:%S\") you accepted the devonfw-ide terms of use.\\nhttps://github.com/devonfw/ide/blob/master/TERMS_OF_USE.asciidoc\" > ~/.devon/.license.agreement");
-    System.out.println("Bash file created...........");
     fileWriter.flush();
     fileWriter.close();
     return true;
@@ -65,14 +62,10 @@ public class FileCreator {
     File file = new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator + "projects"
         + File.separator + "my-project" + File.separator + "text.txt");
     file.createNewFile();
-    System.out.println("Text file created...........");
-
     return true;
   }
 
   public static boolean createDevon4jAppWithCommandLine() {
-
-    System.out.println("createDevon4jAppWithCommandLine started...........");
 
     File projectPath = new File(
         Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator + "devon4jproject");
