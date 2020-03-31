@@ -11,7 +11,7 @@
 	<version>3.2.1</version>
 
 	<properties>
-		<tycho.version>1.5.1</tycho.version>
+		<tycho.version>1.6.0</tycho.version>
 		<tycho-repo.url>https://oss.sonatype.org/content/groups/public/</tycho-repo.url>
 		<attach.source.javadoc.build>false</attach.source.javadoc.build>
 
@@ -22,7 +22,11 @@
 		<module>swtbot-eclipse-test</module>
 	</modules>
 	<dependencies>
-
+<dependency>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.7.0</version>
+</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -40,10 +44,29 @@
 				<extensions>true</extensions>
 			</plugin>
 			<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-p2-plugin</artifactId>
-				<version>${tycho.version}</version>
-			</plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-p2-plugin</artifactId>
+        <version>${tycho.version}</version>
+        <configuration>
+          <baselineMode>warn</baselineMode>
+          <baselineReplace>none</baselineReplace>
+        </configuration>
+        <executions>
+          <execution>
+            <id>default-p2-metadata-default</id>
+            <configuration>
+              <attachP2Metadata>false</attachP2Metadata>
+            </configuration>
+          </execution>
+          <execution>
+            <id>p2-metadata</id>
+            <phase>package</phase>
+            <goals>
+              <goal>p2-metadata</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-compiler-plugin</artifactId>

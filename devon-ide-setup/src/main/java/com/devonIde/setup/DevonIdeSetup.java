@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import org.codehaus.plexus.archiver.tar.TarGZipUnArchiver;
 import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
 
+import com.devonIde.constants.Constants;
 import com.devonIde.helper.FileCreator;
 
 /**
@@ -23,13 +24,17 @@ public class DevonIdeSetup {
 
   private static void downloadSetup() throws IOException {
 
-    File currDir = new File("\\SWTBOT-repo\\download");
-    currDir.mkdir();
+    File currDir = new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator + "download")
+        .getAbsoluteFile();
+    currDir.mkdirs();
+
     String absPath = currDir.getAbsolutePath();
     URL url = new URL("http://de-mucevolve02/files/devonfw-ide/releases/devonfw-ide-scripts-3.2.2.tar.gz");
     URLConnection urlConnection = url.openConnection();
     BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
-    FileOutputStream out = new FileOutputStream(absPath + "/devonfw-ide-scripts-3.2.2.tar.gz");
+
+    FileOutputStream out = new FileOutputStream(
+        new File(absPath + File.separator + "devonfw-ide-scripts-3.2.2.tar.gz"));
     int i = 0;
     byte[] bytesIn = new byte[3000000];
     while ((i = in.read(bytesIn)) >= 0) {
@@ -44,8 +49,10 @@ public class DevonIdeSetup {
    */
   private static void extractDownloadedSetup() {
 
-    File sourceFile = new File("\\SWTBOT-repo\\download\\devonfw-ide-scripts-3.2.2.tar.gz");
-    File destDir = new File("\\SWTBOT-repo\\projects\\my-project");
+    File sourceFile = new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator
+        + "download" + File.separator + "devonfw-ide-scripts-3.2.2.tar.gz");
+    File destDir = new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator + "projects"
+        + File.separator + "my-project");
     destDir.mkdirs();
     TarGZipUnArchiver unArchiver = new TarGZipUnArchiver();
     // Need to set/enable logging for the unArchiver to avoid null pointer
@@ -60,45 +67,78 @@ public class DevonIdeSetup {
 
   private static void runSetup() throws IOException, InterruptedException {
 
-    ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/C", "Start", "setup-helper.bat");
-    File dir = new File(new File("\\SWTBOT-repo\\projects\\my-project").getAbsolutePath());
-    pb.directory(dir);
-    pb.start();
+    File dir = new File(new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator
+        + "projects" + File.separator + "my-project").getAbsolutePath());
+    if (Constants.OS_NAME.startsWith(Constants.WINDOWS)) {
+      ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/C", "Start", "setup-helper.bat");
+      pb.directory(dir);
+      pb.start();
+    } else if (Constants.OS_NAME.startsWith(Constants.LINUX)) {
+
+      try {
+
+        ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", ". setuphelper");
+        pb.directory(dir);
+        pb.start();
+
+        System.out.println("setup-helper run Enviroment is Linux...............");
+      } catch (IOException e) {
+
+        e.printStackTrace();
+      }
+    }
 
   }
 
   public static void main(String[] args) throws IOException, InterruptedException {
 
-    File baseFolder = new File("\\SWTBOT-repo");
+    File baseFolder = new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER);
     baseFolder.mkdir();
     downloadSetup();
     extractDownloadedSetup();
-    FileCreator.createBatFile();
-    FileCreator.createBashFile();
-    FileCreator.createTextFfile();
+    FileCreator.createSetupHelperForWindow();
+    FileCreator.createSetupHelperForLinux();
+    FileCreator.createLincenseAgreement();
+    FileCreator.createTextFile();
     FileCreator.createDevon4jAppWithCommandLine();
     runSetup();
 
-    File file = new File("\\SWTBOT-repo\\projects\\my-project\\text.txt");
+    File file = new File(Constants.USER_HOME + File.separator + Constants.BASE_FOLDER + File.separator + "projects"
+        + File.separator + "my-project" + File.separator + "text.txt");
     FileReader fr = new FileReader(file); // Creation of File Reader object
     BufferedReader br;
     String lineReader = "";
     String searchLine = "";
-    System.out.println("Setup of devonfw-ide installing ...");
-    while (true) {
-      TimeUnit.MINUTES.sleep(1);
-      br = new BufferedReader(fr);// Creation of BufferedReader object
-      while ((lineReader = br.readLine()) != null) {
-        if ("Setup of devonfw-ide completed".equals(lineReader)) {
-          searchLine = lineReader;
-          System.out.println("Setup of devonfw-ide completed");
+    if (Constants.OS_NAME.startsWith(Constants.WINDOWS)) {
+      while (true) {
+        TimeUnit.MINUTES.sleep(1);
+        br = new BufferedReader(fr);// Creation of BufferedReader object
+        while ((lineReader = br.readLine()) != null) {
+          if ("Setup of devonfw-ide completed".equals(lineReader)) {
+            searchLine = lineReader;
+            break;
+          }
+        }
+        if (searchLine.equals("Setup of devonfw-ide completed")) {
           break;
         }
       }
-      if (searchLine.equals("Setup of devonfw-ide completed")) {
-        break;
+    } else if (Constants.OS_NAME.startsWith(Constants.LINUX)) {
+      while (true) {
+        TimeUnit.MINUTES.sleep(1);
+        br = new BufferedReader(fr);// Creation of BufferedReader object
+        while ((lineReader = br.readLine()) != null) {
+          if ("Completed".equals(lineReader.trim())) {
+            searchLine = lineReader.trim();
+            break;
+          }
+        }
+        if (searchLine.equals("Completed")) {
+          break;
+        }
       }
     }
+
   }
 
 }

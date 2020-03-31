@@ -9,6 +9,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.devonfw.java.modules.swttest.constants.Constants;
+
 /**
  * General Eclipse Plug-in Tests
  */
@@ -28,7 +30,8 @@ public class Devon4jAppTest {
 
     bot = new SWTWorkbenchBot();
     // Project should be inside the Directory
-    File projectPath = new File("\\SWTBOT-repo\\devon4jproject");
+    File projectPath = new File(
+        System.getProperty("user.home") + File.separator + Constants.BASE_FOLDER + File.separator + "devon4jproject");
     path = projectPath.getAbsolutePath();
   }
 
@@ -60,10 +63,10 @@ public class Devon4jAppTest {
     bot.tree().getTreeItem("devon4japp-core").getNode("src/test/java").expand();
     bot.tree().getTreeItem("devon4japp-core").getNode("src/test/java").getNode("com.test.general.service.impl.rest")
         .expand();
-    bot.waitUntil(new AllJobsAreFinished(), 10000);
+    bot.waitUntil(new AllJobsAreFinished(), 100000);
     bot.tree().getTreeItem("devon4japp-core").getNode("src/test/java").getNode("com.test.general.service.impl.rest")
         .getNode("SecurityRestServiceImplTest.java").select().contextMenu("Run As").menu("1 JUnit Test").click();
-    bot.waitUntil(new AllJobsAreFinished(), 10000);
+    bot.waitUntil(new AllJobsAreFinished(), 100000);
   }
 
   /**
